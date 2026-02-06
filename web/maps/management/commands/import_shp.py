@@ -21,6 +21,55 @@ VECTOR_EXTS = {".shp", ".geojson", ".json", ".gpkg", ".kml", ".kmz", ".gml", ".z
 
 RESERVED_COLS = {"gid", "geom"}
 
+def table_exists(engine, schema: str, table: str) -> bool:
+    sql = """
+    SELECT EXISTS (
+      SELECT 1
+      FROM information_schema.tables
+      WHERE table_schema = :schema AND table_name = :table
+    ) AS exists;
+    """
+    with engine.begin() as conn:
+        return bool(conn.execute(text(sql), {"schema": schema, "table": table}).scalar())
+
+
+def run_post_sql(engine, schema: str = "public", table: str):
+    """
+    Post-proceso para hex5km:
+    - agrega geom_3857 si no existe
+    - rellena geom_3857 con ST_Transform(geom, 3857)
+    - crea índice GIST
+    - ANALYZE
+    """
+    if not table_exists(engine, schema, table):
+        return ("SKIP", f"No existe {schema}.{table}; no ejecuto post-SQL.")
+
+    full_table = f"{quote_ident(schema)}.{quote_ident(table)}"
+
+    statements = [
+        f"""
+        ALTER TABLE {full_table}
+          ADD COLUMN IF NOT EXISTS geom_3857 geometry(MultiPolygon, 3857);
+        """,
+        f"""
+        UPDATE {full_table}
+        SET geom_3857 = ST_Transform(geom, 3857)
+        WHERE geom_3857 IS NULL AND geom IS NOT NULL;
+        """,
+        f"""
+        CREATE INDEX IF NOT EXISTS {quote_ident(table + "_geom_3857_gix")}
+        ON {full_table}
+        USING GIST (geom_3857);
+        """,
+        f"ANALYZE {full_table};",
+    ]
+
+    with engine.begin() as conn:
+        for st in statements:
+            conn.execute(text(st))
+
+    return ("OK", f"Post-SQL ejecutado para {schema}.{table} (geom_3857/idx/analyze).")
+
 
 def slug_table_name(name: str) -> str:
     name = (name or "").lower()
@@ -308,6 +357,13 @@ def ingest_one(
     before = geometry_validity_stats(engine, schema, table, geom_col="geom")
     repair_table_geometries(engine, schema, table, geom_col="geom", snap=1e-9)
     #after = geometry_validity_stats(engine, schema, table, geom_col="geom")
+
+    # Ejecuta post-SQL para hex5km (solo si existe)
+    st2, msg2 = run_post_sql(engine, schema="public", table=table)
+    if st2 == "OK":
+        self.stdout.write(self.style.SUCCESS(msg2))
+    else:
+        self.stdout.write(self.style.WARNING(msg2))
 
     return ("OK", f"{path.name} -> {schema}.{table} (SRID={srid}, GEOM={geom_type}, rows={len(gdf)})")
 
