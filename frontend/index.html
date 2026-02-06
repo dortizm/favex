@@ -1,0 +1,66 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>MapLibre + MVT (Tegola)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" rel="stylesheet" />
+  <style>
+    html, body, #map { height: 100%; margin: 0; padding: 0; }
+  </style>
+</head>
+<body>
+  <div id="map"></div>
+
+  <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+  <script>
+    const map = new maplibregl.Map({
+      container: 'map',
+      style: {
+        version: 8,
+        sources: {
+          // Fondo simple (sin basemap)
+          empty: { type: "geojson", data: { type:"FeatureCollection", features: [] } },
+
+          // Vector tiles desde Tegola:
+          hex: {
+            type: "vector",
+            tiles: [
+              // Tegola expone: /maps/:map_name/:layer_name/{z}/{x}/{y}.pbf
+              "http://localhost:9090/maps/base/comunas/{z}/{x}/{y}.pbf"
+            ],
+            minzoom: 0,
+            maxzoom: 14
+          }
+        },
+        layers: [
+          { id: "background", type: "background", paint: { "background-color": "#ffffff" } },
+
+          {
+            id: "comunas-fill",
+            type: "fill",
+            source: "comunas",
+            "source-layer": "comunas",
+            paint: {
+              "fill-opacity": 0.55
+            }
+          },
+          {
+            id: "comunas-line",
+            type: "line",
+            source: "comunas",
+            "source-layer": "comunas",
+            paint: {
+              "line-width": 1
+            }
+          }
+        ]
+      },
+      center: [-70.65, -33.45], // Santiago (ajusta)
+      zoom: 6
+    });
+
+    map.addControl(new maplibregl.NavigationControl());
+  </script>
+</body>
+</html>

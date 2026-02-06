@@ -1,0 +1,80 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgis/postgis:16-3.4
+    container_name: favex-postgis
+    env_file: .env
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "${DB_PORT_HOST}:5432"
+
+  geoserver:
+    image: kartoza/geoserver:2.27.2
+    container_name: favex-geoserver
+    env_file: .env
+    environment:
+      GEOSERVER_ADMIN_USER: ${GEOSERVER_ADMIN_USER}
+      GEOSERVER_ADMIN_PASSWORD: ${GEOSERVER_ADMIN_PASSWORD}
+      GEOSERVER_DATA_DIR: /opt/geoserver/data_dir
+    volumes:
+      - geoserver_data:/opt/geoserver/data_dir
+    depends_on:
+      - db
+    ports:
+      - "${GEOSERVER_PORT_HOST}:8080"
+
+  tegola:
+    image: gospatial/tegola:v0.20.0
+    container_name: favex-tegola
+    env_file: .env
+    depends_on:
+      - db
+    ports:
+      - "${TEGOLA_PORT_HOST}:9090"
+    volumes:
+      - ./tegola:/etc/tegola
+    command: serve --config /etc/tegola/config.toml
+
+  frontend:
+    image: nginx:alpine
+    container_name: favex-frontend
+    depends_on:
+      - tegola
+    ports:
+      - "${FRONTEND_PORT_HOST}:8001"
+    volumes:
+      - ./frontend:/usr/share/nginx/html:ro
+
+  web:
+    build: ./web
+    container_name: favex-django
+    env_file: .env
+    command: >
+      sh -c "python manage.py migrate &&
+             python manage.py runserver 0.0.0.0:8000"
+    volumes:
+      - ./web:/app
+      - ./data:/data
+    environment:
+      DJANGO_DEBUG: ${DJANGO_DEBUG}
+      DB_NAME: ${POSTGRES_DB}
+      DB_USER: ${POSTGRES_USER}
+      DB_PASSWORD: ${POSTGRES_PASSWORD}
+      DB_HOST: ${POSTGRES_HOST}
+      DB_PORT: ${POSTGRES_PORT}
+    depends_on:
+      - db
+      - geoserver
+      - tegola
+    ports:
+      - "${DJANGO_PORT_HOST}:8000"
+
+volumes:
+  pgdata:
+  geoserver_data:

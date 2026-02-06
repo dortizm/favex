@@ -1,0 +1,46 @@
+[webserver] 
+port = ":9090" 
+
+[[providers]]
+name = "pg"
+type = "postgis"
+uri = "postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}?sslmode=disable"
+srid = 3857
+
+[[maps]] 
+name = "${TEGOLA_MAP_NAME}" 
+attribution = "Demo" 
+
+[[maps.layers]] 
+name = "hex5km" 
+provider_layer = "pg.hex5km" 
+min_zoom = "${TEGOLA_MIN_ZOOM}" 
+max_zoom = "${TEGOLA_MAX_ZOOM}" 
+
+[[providers.layers]]
+name = "hex5km"
+geometry_fieldname = "geom"
+id_fieldname = "gid"
+geometry_type = "multilinestring"
+
+sql = """
+SELECT
+  gid,
+  id_hex,
+  ST_AsBinary(
+    ST_Boundary(
+      CASE
+        WHEN !ZOOM! <= 6  THEN ST_SimplifyPreserveTopology(geom_3857, 200)
+        WHEN !ZOOM! <= 8  THEN ST_SimplifyPreserveTopology(geom_3857, 80)
+        WHEN !ZOOM! <= 10 THEN ST_SimplifyPreserveTopology(geom_3857, 25)
+        WHEN !ZOOM! <= 20 THEN ST_SimplifyPreserveTopology(geom_3857, 5)
+        ELSE geom_3857
+      END
+    )
+  ) AS geom
+FROM public.hex5km
+WHERE geom_3857 && !BBOX!;
+
+"""
+
+

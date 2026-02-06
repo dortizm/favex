@@ -1,0 +1,62 @@
+<link href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" rel="stylesheet" />
+<div id="map" style="height:100vh"></div>
+<script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+
+<script>
+  const map = new maplibregl.Map({
+    container: "map",
+    style: "/mvt/style.json",
+    center: [-70.65, -33.45],
+    zoom: 6
+  });
+
+  map.addControl(new maplibregl.NavigationControl());
+  console.log("test");
+
+  map.on("load", () => {
+    // 1) Arma dinámicamente la lista de layers clickeables
+    // Incluye fill y line (porque tu caso es "-line")
+    let polyLayers = map.getStyle().layers
+      .filter(l => (l.type === "fill" || l.type === "line"))
+      .map(l => l.id);
+
+    console.log("Layers usados para click:", polyLayers);
+
+    // Si el style cambia o se re-procesa internamente, recalculamos
+    map.on("styledata", () => {
+      polyLayers = map.getStyle().layers
+        .filter(l => (l.type === "fill" || l.type === "line"))
+        .map(l => l.id);
+    });
+
+    map.on("click", (e) => {
+      const z = map.getZoom();
+      const pad = Math.round(Math.min(300, Math.max(50, z * 5))); // 6..20 px aprox
+
+      const bbox = [
+        [e.point.x - pad, e.point.y - pad],
+        [e.point.x + pad, e.point.y + pad],
+      ];
+
+      const features = map.queryRenderedFeatures(bbox, { layers: polyLayers });
+      if (!features.length) return;
+
+      // 2) Toma el primer feature que tenga id_hex (si existe)
+      const f = features.find(x => x.properties && x.properties.id_hex) || features[0];
+      const idHex = f.properties?.id_hex ?? "(sin id_hex)";
+
+      new maplibregl.Popup()
+        .setLngLat(e.lngLat)
+        .setHTML(`<b>id_hex:</b> ${idHex}`)
+        .addTo(map);
+
+      console.log("clicked layer:", f.layer?.id, "id_hex:", idHex, "feature:", f);
+    });
+
+    // (Opcional) cursor “mano” solo cuando hay features
+    map.on("mousemove", (e) => {
+      const feats = map.queryRenderedFeatures(e.point, { layers: polyLayers });
+      map.getCanvas().style.cursor = feats.length ? "pointer" : "";
+    });
+  });
+</script>
