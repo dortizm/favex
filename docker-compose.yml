@@ -10,7 +10,7 @@ services:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     volumes:
-      - pgdata:/var/lib/postgresql/data
+      - ./pgdata:/var/lib/postgresql/data
     ports:
       - "${DB_PORT_HOST}:5432"
 
@@ -23,7 +23,7 @@ services:
       GEOSERVER_ADMIN_PASSWORD: ${GEOSERVER_ADMIN_PASSWORD}
       GEOSERVER_DATA_DIR: /opt/geoserver/data_dir
     volumes:
-      - geoserver_data:/opt/geoserver/data_dir
+      - ./geoserver_data:/opt/geoserver/data_dir
     depends_on:
       - db
     ports:
@@ -75,6 +75,4 @@ services:
     ports:
       - "${DJANGO_PORT_HOST}:8000"
 
-volumes:
-  pgdata:
-  geoserver_data:
+

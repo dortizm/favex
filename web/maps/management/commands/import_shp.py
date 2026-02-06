@@ -33,7 +33,7 @@ def table_exists(engine, schema: str, table: str) -> bool:
         return bool(conn.execute(text(sql), {"schema": schema, "table": table}).scalar())
 
 
-def run_post_sql(engine, schema: str = "public", table: str):
+def run_post_sql(engine, schema: str = "public", table: str = "default"):
     """
     Post-proceso para hex5km:
     - agrega geom_3857 si no existe
@@ -360,10 +360,6 @@ def ingest_one(
 
     # Ejecuta post-SQL para hex5km (solo si existe)
     st2, msg2 = run_post_sql(engine, schema="public", table=table)
-    if st2 == "OK":
-        self.stdout.write(self.style.SUCCESS(msg2))
-    else:
-        self.stdout.write(self.style.WARNING(msg2))
 
     return ("OK", f"{path.name} -> {schema}.{table} (SRID={srid}, GEOM={geom_type}, rows={len(gdf)})")
 

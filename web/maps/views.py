@@ -3,46 +3,53 @@ from django.shortcuts import render
 from django.http import JsonResponse
 from django.views.decorators.http import require_GET
 from django.contrib.gis.db.models.functions import AsGeoJSON
-from .models import Lugar
+from django.db import connection
 import os
 
-
 def mapa(request):
-    categorias = (
-        Lugar.objects.values_list("categoria", flat=True)
-        .distinct()
-        .order_by("categoria")
-    )
-    return render(request, "maps/map.html", {"categorias": categorias})
+    return render(request, "maps/map.html")
 
+def regions(request):
+    with connection.cursor() as cur:
+        cur.execute("""
+            SELECT DISTINCT cut_reg, region
+            FROM comunas
+            WHERE cut_reg IS NOT NULL
+              AND region IS NOT NULL AND region <> ''
+            ORDER BY region
+        """)
+        data = [{"code": r[0], "name": r[1]} for r in cur.fetchall()]
+    return JsonResponse(data, safe=False)
 
-@require_GET
-def lugares_geojson(request):
-    categoria = request.GET.get("categoria")
-    qs = Lugar.objects.all()
-    if categoria:
-        qs = qs.filter(categoria=categoria)
+def provinces(request):
+    cut_reg = request.GET.get("cut_reg", "")
+    with connection.cursor() as cur:
+        cur.execute("""
+            SELECT DISTINCT cut_prov, provincia
+            FROM comunas
+            WHERE cut_reg = %s
+              AND cut_prov IS NOT NULL
+              AND provincia IS NOT NULL AND provincia <> ''
+            ORDER BY provincia
+        """, [cut_reg])
+        data = [{"code": r[0], "name": r[1]} for r in cur.fetchall()]
+    return JsonResponse(data, safe=False)
 
-    features = []
-    for lugar in qs.annotate(geojson=AsGeoJSON("geom")):
-        geometry = json.loads(lugar.geojson)
-        features.append(
-            {
-                "type": "Feature",
-                "geometry": geometry,
-                "properties": {
-                    "id": lugar.id,
-                    "nombre": lugar.nombre,
-                    "categoria": lugar.categoria,
-                },
-            }
-        )
-
-    data = {
-        "type": "FeatureCollection",
-        "features": features,
-    }
-    return JsonResponse(data)
+def communes(request):
+    cut_reg = request.GET.get("cut_reg", "")
+    cut_prov = request.GET.get("cut_prov", "")
+    with connection.cursor() as cur:
+        cur.execute("""
+            SELECT DISTINCT cut_com, comuna
+            FROM comunas
+            WHERE cut_reg = %s
+              AND cut_prov = %s
+              AND cut_com IS NOT NULL
+              AND comuna IS NOT NULL AND comuna <> ''
+            ORDER BY comuna
+        """, [cut_reg, cut_prov])
+        data = [{"code": r[0], "name": r[1]} for r in cur.fetchall()]
+    return JsonResponse(data, safe=False)
 
 def mvt_style(request):
     tegola_public = os.environ.get("TEGOLA_PUBLIC_URL", "http://localhost:9090")

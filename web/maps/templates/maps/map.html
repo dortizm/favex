@@ -1,8 +1,75 @@
 <link href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" rel="stylesheet" />
+<style>
+  #map { height: 100vh; }
+
+  /* Panel izquierdo */
+  #filter-panel{
+    position: absolute;
+    top: 12px;
+    left: 12px;              /* <-- izquierda */
+    width: 280px;
+    background: rgba(255,255,255,0.95);
+    border-radius: 12px;
+    padding: 12px 12px 10px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.15);
+    font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+    z-index: 2;
+  }
+  #filter-panel h3{ margin: 0 0 10px; font-size: 16px; }
+  #filter-panel label{ display:block; margin-top:10px; font-size: 12px; opacity: .85; }
+  #filter-panel select, #filter-panel button{
+    width: 100%;
+    margin-top: 6px;
+    padding: 8px;
+    border-radius: 8px;
+    border: 1px solid rgba(0,0,0,.15);
+    background: white;
+  }
+  #filter-panel button{
+    margin-top: 12px;
+    cursor: pointer;
+  }
+  #filter-panel .hint{
+    margin-top: 10px;
+    font-size: 12px;
+    opacity: .7;
+    line-height: 1.25;
+  }
+</style>
+
 <div id="map" style="height:100vh"></div>
+
+<!-- Panel de filtros -->
+<div id="filter-panel">
+  <h3>Filtros</h3>
+
+  <label>Región</label>
+  <select id="sel-region">
+    <option value="">Todas</option>
+  </select>
+
+  <label>Provincia</label>
+  <select id="sel-provincia" disabled>
+    <option value="">Todas</option>
+  </select>
+
+  <label>Comuna</label>
+  <select id="sel-comuna" disabled>
+    <option value="">Todas</option>
+  </select>
+
+  <button id="btn-clear" type="button">Limpiar</button>
+</div>
 <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
 
 <script>
+
+  function setOptionsFromPairs(selectEl, pairs, includeAll=true){
+    selectEl.innerHTML = "";
+    if(includeAll) selectEl.append(new Option("Todas", ""));
+    pairs.forEach(({code, name}) => selectEl.append(new Option(name, String(code))));
+  }
+
   const map = new maplibregl.Map({
     container: "map",
     style: "/mvt/style.json",
@@ -11,23 +78,189 @@
   });
 
   map.addControl(new maplibregl.NavigationControl());
-  console.log("test");
 
-  map.on("load", () => {
-    // 1) Arma dinámicamente la lista de layers clickeables
-    // Incluye fill y line (porque tu caso es "-line")
+  map.on("load", async () => {
+    // === DOM selects ===
+    const selRegion = document.getElementById("sel-region");
+    const selProv   = document.getElementById("sel-provincia");
+    const selCom    = document.getElementById("sel-comuna");
+    const btnClear  = document.getElementById("btn-clear");
+    // === CONFIG: AJUSTA ESTO SEGÚN TU style.json ===
+    // 1) El "source" que contiene tus tiles (en style.json -> sources -> <id>)
+    const SOURCE_ID = "tegola";     // <-- cambia si tu source se llama distinto
+    // 2) El "source-layer" dentro del tile (nombre de capa MVT; en Tegola suele ser el name del provider_layer)
+    const SOURCE_LAYER = "hex5km";  // <-- cambia si tu capa se llama distinto
+    // =================================================
+
+    // Si tu style.json NO trae el source, puedes agregarlo aquí (descomenta y ajusta URL):
+    /*
+    if (!map.getSource(SOURCE_ID)) {
+      map.addSource(SOURCE_ID, {
+        type: "vector",
+        tiles: ["http://localhost:9090/maps/base/{z}/{x}/{y}.pbf"], // ajusta
+        minzoom: 0,
+        maxzoom: 14
+      });
+    }
+    */
+
+    // 1) Agrega una capa fill con gradiente semáforo basado en id_hex (1..39735)
+    // La insertamos antes de la primera capa de símbolos, para no tapar labels (si existen).
+    const firstSymbolLayerId = (map.getStyle().layers || []).find(l => l.type === "symbol")?.id;
+
+    // Evita duplicar si recargas estilo
+    if (!map.getLayer("hex5km-fill-semaforo")) {
+      map.addLayer(
+        {
+          id: "hex5km-fill-semaforo",
+          type: "fill",
+          source: SOURCE_ID,
+          "source-layer": SOURCE_LAYER,
+          paint: {
+            "fill-color": [
+              "interpolate",
+              ["linear"],
+              ["to-number", ["coalesce", ["get", "id_hex"], 1]],
+              1, "#00c853",        // verde
+              19868, "#ffeb3b",    // amarillo (mitad)
+              39735, "#d50000"     // rojo
+            ],
+            "fill-opacity": 0.55
+          }
+        },
+        firstSymbolLayerId // beforeId (puede ser undefined; igual funciona)
+      );
+    }
+
+    // (Opcional) borde del hex para que se vea más claro
+    if (!map.getLayer("hex5km-line")) {
+      map.addLayer(
+        {
+          id: "hex5km-line",
+          type: "line",
+          source: SOURCE_ID,
+          "source-layer": SOURCE_LAYER,
+          paint: {
+            "line-color": "rgba(0,0,0,0.35)",
+            "line-width": 0.8
+          }
+        },
+        firstSymbolLayerId
+      );
+    }
+
+    // 2) Arma dinámicamente la lista de layers clickeables (incluye el fill nuevo)
     let polyLayers = map.getStyle().layers
       .filter(l => (l.type === "fill" || l.type === "line"))
       .map(l => l.id);
 
     console.log("Layers usados para click:", polyLayers);
 
-    // Si el style cambia o se re-procesa internamente, recalculamos
     map.on("styledata", () => {
       polyLayers = map.getStyle().layers
         .filter(l => (l.type === "fill" || l.type === "line"))
         .map(l => l.id);
     });
+
+    // =========================
+    // CARGA DE SELECTS + FILTRO
+    // =========================
+    const FILTER_LAYERS = ["hex5km-fill-semaforo", "hex5km-line"];
+
+    function applyHexFilter(){
+      const cut_reg  = selRegion.value;
+      const cut_prov = selProv.value;
+      const cut_com  = selCom.value;
+
+      const clauses = ["all"];
+      if (cut_reg)  clauses.push(["==", ["to-string", ["get", "cut_reg"]],  String(cut_reg)]);
+      if (cut_prov) clauses.push(["==", ["to-string", ["get", "cut_prov"]], String(cut_prov)]);
+      if (cut_com)  clauses.push(["==", ["to-string", ["get", "cut_com"]],  String(cut_com)]);
+
+      const expr = clauses.length > 1 ? clauses : null;
+
+      FILTER_LAYERS.forEach(layerId => {
+        if (map.getLayer(layerId)) map.setFilter(layerId, expr);
+      });
+    }
+
+
+    async function fetchJSON(url){
+      const res = await fetch(url);
+      if(!res.ok) throw new Error("HTTP " + res.status + " en " + url);
+      return await res.json();
+    }
+
+    async function loadRegions(){
+      const regions = await fetchJSON("/api/regions/");
+      setOptionsFromPairs(selRegion, regions);
+    }
+
+    async function loadProvinces(cut_reg){
+      const provs = await fetchJSON("/api/provinces/?cut_reg=" + encodeURIComponent(cut_reg));
+      setOptionsFromPairs(selProv, provs);
+    }
+
+    async function loadCommunes(cut_reg, cut_prov){
+      const coms = await fetchJSON(
+        "/api/communes/?cut_reg=" + encodeURIComponent(cut_reg) +
+        "&cut_prov=" + encodeURIComponent(cut_prov)
+      );
+      setOptionsFromPairs(selCom, coms);
+    }
+
+    // Inicializa regiones
+    await loadRegions().catch(console.error);
+
+    // listeners cascada
+    selRegion.addEventListener("change", async () => {
+      const cut_reg = selRegion.value;
+
+      selProv.disabled = !cut_reg;
+      selCom.disabled  = true;
+
+      setOptionsFromPairs(selProv, []);
+      setOptionsFromPairs(selCom, []);
+
+      if (cut_reg) await loadProvinces(cut_reg);
+
+      applyHexFilter();
+    });
+
+    selProv.addEventListener("change", async () => {
+      const cut_reg  = selRegion.value;
+      const cut_prov = selProv.value;
+
+      selCom.disabled = !(cut_reg && cut_prov);
+      setOptionsFromPairs(selCom, []);
+
+      if (cut_reg && cut_prov) await loadCommunes(cut_reg, cut_prov);
+
+      applyHexFilter();
+    });
+
+    selCom.addEventListener("change", () => applyHexFilter());
+
+    btnClear.addEventListener("click", () => {
+      selRegion.value = "";
+      selProv.value = "";
+      selCom.value = "";
+
+      selProv.disabled = true;
+      selCom.disabled = true;
+
+      setOptionsFromPairs(selProv, []);
+      setOptionsFromPairs(selCom, []);
+
+      FILTER_LAYERS.forEach(layerId => {
+        if (map.getLayer(layerId)) map.setFilter(layerId, null);
+      });
+    });
+
+
+    // =========================
+    // Click + mousemove 
+    // =========================
 
     map.on("click", (e) => {
       const z = map.getZoom();
@@ -41,7 +274,6 @@
       const features = map.queryRenderedFeatures(bbox, { layers: polyLayers });
       if (!features.length) return;
 
-      // 2) Toma el primer feature que tenga id_hex (si existe)
       const f = features.find(x => x.properties && x.properties.id_hex) || features[0];
       const idHex = f.properties?.id_hex ?? "(sin id_hex)";
 
@@ -53,7 +285,6 @@
       console.log("clicked layer:", f.layer?.id, "id_hex:", idHex, "feature:", f);
     });
 
-    // (Opcional) cursor “mano” solo cuando hay features
     map.on("mousemove", (e) => {
       const feats = map.queryRenderedFeatures(e.point, { layers: polyLayers });
       map.getCanvas().style.cursor = feats.length ? "pointer" : "";
