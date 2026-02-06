@@ -1,40 +1,7 @@
-{% extends "base.html" %}
-{% load static %}
-{% block content %}
 <link href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" rel="stylesheet" />
 <style>
   #app { position: relative; height: 100vh; width: 100vw; overflow: hidden; }
   #map { position: absolute; inset: 0; }
-
-  .sidebar{
-    position: absolute;
-    top: 0; right: 0;
-    width: 360px;
-    height: 100%;
-    background: #fff;
-    border-left: 1px solid #e5e5e5;
-    box-shadow: -6px 0 18px rgba(0,0,0,.08);
-    padding: 14px 14px 10px;
-    z-index: 2;
-    font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-  }
-  .sidebar__header{
-    display: flex; align-items: center; justify-content: space-between;
-    gap: 10px;
-    border-bottom: 1px solid #eee;
-    padding-bottom: 10px; margin-bottom: 10px;
-  }
-  .sidebar__header h3{ margin: 0; font-size: 16px; }
-  .sidebar__content{ font-size: 13px; line-height: 1.35; }
-  .muted{ color: #666; margin: 0; }
-  .btn{
-    border: 1px solid #ddd; background: #fafafa;
-    padding: 6px 10px; border-radius: 8px; cursor: pointer;
-  }
-  .row{ display: grid; grid-template-columns: 1fr 1fr; gap: 6px 10px; margin: 10px 0; }
-  .kv{ padding: 8px; border: 1px solid #eee; border-radius: 10px; background: #fcfcfc; }
-  .k{ font-size: 11px; color:#666; }
-  .v{ font-size: 13px; font-weight: 600; word-break: break-word; }
 
   /* Panel izquierdo */
   #filter-panel{
@@ -69,11 +36,41 @@
     opacity: .7;
     line-height: 1.25;
   }
+
+  .sidebar{
+    position: absolute;
+    top: 0; right: 0;
+    width: 360px;
+    height: 100%;
+    background: #fff;
+    border-left: 1px solid #e5e5e5;
+    box-shadow: -6px 0 18px rgba(0,0,0,.08);
+    padding: 14px 14px 10px;
+    z-index: 2;
+    font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  }
+  .sidebar__header{
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 10px;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 10px; margin-bottom: 10px;
+  }
+  .sidebar__header h3{ margin: 0; font-size: 16px; }
+  .sidebar__content{ font-size: 13px; line-height: 1.35; }
+  .muted{ color: #666; margin: 0; }
+  .btn{
+    border: 1px solid #ddd; background: #fafafa;
+    padding: 6px 10px; border-radius: 8px; cursor: pointer;
+  }
+  .row{ display: grid; grid-template-columns: 1fr 1fr; gap: 6px 10px; margin: 10px 0; }
+  .kv{ padding: 8px; border: 1px solid #eee; border-radius: 10px; background: #fcfcfc; }
+  .k{ font-size: 11px; color:#666; }
+  .v{ font-size: 13px; font-weight: 600; word-break: break-word; }
 </style>
 <div id="app">
   <div id="map" style="height:100vh"></div>
 
-  <!-- Panel de filtros -->
+  <!-- Panel de filtros izquierda -->
   <div id="filter-panel">
     <h3>Filtros</h3>
 
@@ -91,11 +88,6 @@
     <select id="sel-comuna" disabled>
       <option value="">Todas</option>
     </select>
-
-    <label class="chk">
-      <input type="checkbox" id="toggle-formaciones" />
-      <span>Formaciones</span>
-    </label>
 
     <button id="btn-clear" type="button">Limpiar</button>
   </div>
@@ -145,16 +137,19 @@
     const selProv   = document.getElementById("sel-provincia");
     const selCom    = document.getElementById("sel-comuna");
     const btnClear  = document.getElementById("btn-clear");
-    const chkFormaciones = document.getElementById("toggle-formaciones");
-    // === CONFIG: AJUSTA ESTO SEGÚN TU style.json ===
+
+    // === Sidebar DOM ===
+    const sidebarContent = document.getElementById("sidebarContent");
+    const btnClearSel    = document.getElementById("btnClear");
+
+    // === CONFIG: style.json ===
     // 1) El "source" que contiene tus tiles (en style.json -> sources -> <id>)
     const SOURCE_ID = "tegola";     // <-- cambia si tu source se llama distinto
     // 2) El "source-layer" dentro del tile (nombre de capa MVT; en Tegola suele ser el name del provider_layer)
-    const SOURCE_LAYER = "hex5km";  // <-- cambiar si tu capa se llama distinto
-    const FORM_LAYERS = ["formaciones-fill"];
+    const SOURCE_LAYER = "hex5km";  // <-- cambia si tu capa se llama distinto
     // =================================================
 
-    // Si tu style.json NO trae el source, puedes agregarlo aquí (descomenta y ajusta URL):
+    // Si style.json NO trae el source, puedes agregarlo aquí (descomenta y ajusta URL):
     /*
     if (!map.getSource(SOURCE_ID)) {
       map.addSource(SOURCE_ID, {
@@ -166,11 +161,11 @@
     }
     */
 
-    // 1) Agrega una capa fill con gradiente semáforo basado en riqueza_sp
+    // 1) Agrega una capa fill con gradiente semáforo basado en id_hex (1..39735)
     // La insertamos antes de la primera capa de símbolos, para no tapar labels (si existen).
     const firstSymbolLayerId = (map.getStyle().layers || []).find(l => l.type === "symbol")?.id;
 
-    // Evita duplicar si recargas estilo
+    // Fill semáforo + highlight con feature-state (Evita duplicar si recargas estilo) 
     if (!map.getLayer("hex5km-fill-semaforo")) {
       map.addLayer(
         {
@@ -182,19 +177,19 @@
             "fill-color": [
               "interpolate",
               ["linear"],
-              ["to-number", ["coalesce", ["get", "riqueza_sp"], 1]],
-              0, "#00c853",        // verde
-              300, "#ffeb3b",    // amarillo (mitad)
-              595, "#d50000"     // rojo
+              ["to-number", ["coalesce", ["get", "id_hex"], 1]],
+              1, "#00c853",        // verde
+              19868, "#ffeb3b",    // amarillo (mitad)
+              39735, "#d50000"     // rojo
             ],
-            "fill-opacity": 0.4
+            "fill-opacity": 0.55
           }
         },
         firstSymbolLayerId // beforeId (puede ser undefined; igual funciona)
       );
     }
 
-    // (Opcional) borde del hex para que se vea más claro
+    // Line borde + highlight con feature-state (Opcional) borde del hex para que se vea más claro
     if (!map.getLayer("hex5km-line")) {
       map.addLayer(
         {
@@ -211,33 +206,25 @@
       );
     }
 
-    // 2) Arma dinámicamente la lista de layers clickeables (incluye el fill nuevo)
-    let polyLayers = map.getStyle().layers
-      .filter(l => (l.type === "fill" || l.type === "line"))
-      .map(l => l.id);
-
-    console.log("Layers usados para click:", polyLayers);
-
-    map.on("styledata", () => {
-      polyLayers = map.getStyle().layers
-        .filter(l => (l.type === "fill" || l.type === "line"))
-        .map(l => l.id);
-    });
-
     // =========================
     // CARGA DE SELECTS + FILTRO
     // =========================
-    const FILTER_LAYERS = ["hex5km-fill-semaforo", "hex5km-line", "formaciones-fill"];
+    // Capa(s) a filtrar
+    const FILTER_LAYERS = ["hex5km-fill-semaforo", "hex5km-line"];
+
+    // Capa(s) clickeables: usa solo las del hex (evita clicks en todo el style)
+    const CLICK_LAYERS = ["hex5km-fill-semaforo", "hex5km-line"];
 
     // =========================
     // Sidebar render
     // =========================
-    async function renderSelection(props = null) {
+    function renderSelection(props = null) {
       if (!props) {
         sidebarContent.innerHTML = `<p class="muted">Haz click en un hexágono para ver detalles.</p>`;
         return;
       }
 
+      // Ajusta/expande estos campos a tu gusto
       const fields = [
         ["id_hex", props.id_hex],
         ["cut_reg", props.cut_reg],
@@ -246,10 +233,8 @@
         ["region", props.region],
         ["provincia", props.provincia],
         ["comuna", props.comuna],
-        ["riqueza_sp", props.riqueza_sp],
       ].filter(([k, v]) => v !== undefined && v !== null && v !== "");
 
-      // Render base inmediato
       sidebarContent.innerHTML = `
         <div class="row">
           ${fields.map(([k, v]) => `
@@ -259,50 +244,31 @@
             </div>
           `).join("")}
         </div>
-        <div id="formacionesBlock">
-          <p class="muted">Cargando formaciones…</p>
-        </div>
+        <details>
+          <summary>Ver JSON completo</summary>
+          <pre style="white-space:pre-wrap; font-size:12px; border:1px solid #eee; padding:10px; border-radius:10px; background:#fafafa;">${escapeHtml(JSON.stringify(props, null, 2))}</pre>
+        </details>
       `;
-
-      // Si no hay id_hex, no podemos consultar
-      const idHex = props.id_hex;
-      if (!idHex) {
-        document.getElementById("formacionesBlock").innerHTML = `<p class="muted">Sin id_hex para consultar formaciones.</p>`;
-        return;
-      }
-
-      // Consulta al backend para el cruce
-      try {
-        const res = await fetchJSON(`/api/hex-formaciones/?id_hex=${encodeURIComponent(idHex)}`);
-        const items = (res && res.ok && Array.isArray(res.items)) ? res.items : [];
-        document.getElementById("formacionesBlock").innerHTML = renderFormaciones(items);
-      } catch (err) {
-        console.error(err);
-        document.getElementById("formacionesBlock").innerHTML = `<p class="muted">Error consultando formaciones.</p>`;
-      }
     }
 
-    function renderFormaciones(items = []) {
-        if (!items?.length) {
-          return `<p class="muted">Sin intersecciones con formaciones.</p>`;
-        }
+    // =========================
+    // feature-state selection
+    // =========================
+    let selected = null; // { source, sourceLayer, id }
 
-        const top = items.slice(0, 10); // muestra máx 10 (ajusta)
-        return `
-          <div style="margin-top:10px;">
-            <div class="k" style="margin: 6px 0;">Formaciones (intersección)</div>
-            <div style="border:1px solid #eee; border-radius:10px; overflow:hidden;">
-              ${top.map((x, i) => `
-                <div style="padding:8px 10px; border-top:${i ? "1px solid #eee" : "0"}; background:#fff;">
-                  <div class="v" style="font-size:13px;">${escapeHtml(x.nombre ?? x.name ?? "Sin nombre")}</div>
-                  ${x.inter_km2 != null ? `<div class="k">${escapeHtml(Number(x.inter_km2).toFixed(3))} km²</div>` : ``}
-                </div>
-              `).join("")}
-            </div>
-            ${items.length > top.length ? `<p class="muted" style="margin-top:8px;">Mostrando ${top.length} de ${items.length}.</p>` : ``}
-          </div>
-        `;
+    function clearSelected() {
+      if (selected) {
+        map.setFeatureState(selected, { selected: false });
       }
+      selected = null;
+      renderSelection(null);
+    }
+
+    btnClearSel.addEventListener("click", clearSelected);
+
+    // =========================
+    // FILTRO
+    // =========================
 
     function applyHexFilter(){
       const cut_reg  = selRegion.value;
@@ -317,13 +283,7 @@
       const expr = clauses.length > 1 ? clauses : null;
 
       FILTER_LAYERS.forEach(layerId => {
-        if (!map.getLayer(layerId)) return;
-
-        // si es capa de formaciones y el checkbox está apagado, no tocar filtro
-        const isForm = FORM_LAYERS.includes(layerId);
-        if (isForm && !chkFormaciones.checked) return;
-
-        map.setFilter(layerId, expr);
+        if (map.getLayer(layerId)) map.setFilter(layerId, expr);
       });
     }
 
@@ -398,25 +358,6 @@
       FILTER_LAYERS.forEach(layerId => {
         if (map.getLayer(layerId)) map.setFilter(layerId, null);
       });
-
-      chkFormaciones.checked = false;
-      FORM_LAYERS.forEach(id => {
-        if (map.getLayer(id)) map.setLayoutProperty(id, "visibility", "none");
-      });
-    });
-
-    chkFormaciones.addEventListener("change", () => {
-      const on = chkFormaciones.checked;
-      const vis = on ? "visible" : "none";
-
-      FORM_LAYERS.forEach(id => map.getLayer(id) && map.setLayoutProperty(id, "visibility", vis));
-
-      // baja borde hex cuando hay formaciones encima
-      if (map.getLayer("hex5km-line")) {
-        map.setPaintProperty("hex5km-line", "line-opacity", on ? 0.05 : 0.15);
-      }
-
-      applyHexFilter();
     });
 
 
@@ -424,7 +365,7 @@
     // Click + mousemove 
     // =========================
 
-    map.on("click", async (e) => {
+    map.on("click", (e) => {
       const z = map.getZoom();
       const pad = Math.round(Math.min(300, Math.max(50, z * 5))); // 6..20 px aprox
 
@@ -433,34 +374,43 @@
         [e.point.x + pad, e.point.y + pad],
       ];
 
-      const features = map.queryRenderedFeatures(bbox, { layers: polyLayers });
+      const features = map.queryRenderedFeatures(bbox, { layers: CLICK_LAYERS });
       if (!features.length) return;
 
-      const f = features.find(x => x.properties && x.properties.id_hex) || features[0];
-      const idHex = f.properties?.id_hex ?? "(sin id_hex)";
+      // Preferir el fill para evitar duplicados line+fill
+      const f = features.find(x => x.layer && x.layer.id === "hex5km-fill-semaforo") || features[0];
 
-      const sidebarContent = document.getElementById("sidebarContent");
+      // 1) Sidebar con properties
+      renderSelection(f.properties || {});
 
-      async function fetchJSON(url){
-        const res = await fetch(url);
-        if(!res.ok) throw new Error("HTTP " + res.status + " en " + url);
-        return await res.json();
+      // 2) Highlight con feature-state si existe id
+      if (f.id != null) {
+        if (selected) map.setFeatureState(selected, { selected: false });
+
+        selected = {
+          source: f.source,
+          sourceLayer: f.sourceLayer,
+          id: f.id,
+        };
+        map.setFeatureState(selected, { selected: true });
+      } else {
+        // Sin id, no se puede feature-state
+        selected = null;
       }
 
-      await renderSelection(f.properties || {});
-
+      // 3) Popup (opcional)
+      const idHex = f.properties?.id_hex ?? "(sin id_hex)";
       new maplibregl.Popup()
         .setLngLat(e.lngLat)
-        .setHTML(`<b>id_hex:</b> ${idHex}`)
+        .setHTML(`<b>id_hex:</b> ${escapeHtml(idHex)}`)
         .addTo(map);
 
       console.log("clicked layer:", f.layer?.id, "id_hex:", idHex, "feature:", f);
     });
 
     map.on("mousemove", (e) => {
-      const feats = map.queryRenderedFeatures(e.point, { layers: polyLayers });
+      const feats = map.queryRenderedFeatures(e.point, { layers: CLICK_LAYERS });
       map.getCanvas().style.cursor = feats.length ? "pointer" : "";
     });
   });
 </script>
-{% endblock %}
