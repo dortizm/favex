@@ -17,6 +17,12 @@ provider_layer = "pg.hex5km"
 min_zoom = "${TEGOLA_MIN_ZOOM}" 
 max_zoom = "${TEGOLA_MAX_ZOOM}" 
 
+[[maps.layers]]
+name = "formaciones"
+provider_layer = "pg.formaciones"
+min_zoom = 5
+max_zoom = 20
+
 [[providers.layers]]
 name = "hex5km"
 geometry_fieldname = "geom"
@@ -27,6 +33,7 @@ sql = """
 SELECT
   gid,
   id_hex,
+  riqueza_sp,
   cut_reg,
   cut_prov,
   cut_com,
@@ -46,4 +53,27 @@ WHERE geom_3857 && !BBOX!;
 
 """
 
+[[providers.layers]]
+name = "formaciones"
+geometry_fieldname = "geom"
+id_fieldname = "gid"
+geometry_type = "multipolygon"
 
+sql = """
+SELECT
+  gid,
+  formacion,
+  ST_AsBinary(
+    ST_Boundary(
+      CASE
+        WHEN !ZOOM! <= 6  THEN ST_SimplifyPreserveTopology(geom_3857, 250)
+        WHEN !ZOOM! <= 8  THEN ST_SimplifyPreserveTopology(geom_3857, 120)
+        WHEN !ZOOM! <= 10 THEN ST_SimplifyPreserveTopology(geom_3857, 40)
+        WHEN !ZOOM! <= 20 THEN ST_SimplifyPreserveTopology(geom_3857, 10)
+        ELSE geom_3857
+      END
+    )  
+  ) AS geom
+FROM public.formaciones
+WHERE geom_3857 && !BBOX!;
+"""

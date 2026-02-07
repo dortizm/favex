@@ -7,4 +7,5 @@ urlpatterns = [
     path("api/regions/", views.regions),
     path("api/provinces/", views.provinces),
     path("api/communes/", views.communes),
+    path("api/hex-formaciones/", views.hex_formaciones, name="hex_formaciones"),
 ]

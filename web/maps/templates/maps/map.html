@@ -1,6 +1,37 @@
 <link href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" rel="stylesheet" />
 <style>
-  #map { height: 100vh; }
+  #app { position: relative; height: 100vh; width: 100vw; overflow: hidden; }
+  #map { position: absolute; inset: 0; }
+
+  .sidebar{
+    position: absolute;
+    top: 0; right: 0;
+    width: 360px;
+    height: 100%;
+    background: #fff;
+    border-left: 1px solid #e5e5e5;
+    box-shadow: -6px 0 18px rgba(0,0,0,.08);
+    padding: 14px 14px 10px;
+    z-index: 2;
+    font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  }
+  .sidebar__header{
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 10px;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 10px; margin-bottom: 10px;
+  }
+  .sidebar__header h3{ margin: 0; font-size: 16px; }
+  .sidebar__content{ font-size: 13px; line-height: 1.35; }
+  .muted{ color: #666; margin: 0; }
+  .btn{
+    border: 1px solid #ddd; background: #fafafa;
+    padding: 6px 10px; border-radius: 8px; cursor: pointer;
+  }
+  .row{ display: grid; grid-template-columns: 1fr 1fr; gap: 6px 10px; margin: 10px 0; }
+  .kv{ padding: 8px; border: 1px solid #eee; border-radius: 10px; background: #fcfcfc; }
+  .k{ font-size: 11px; color:#666; }
+  .v{ font-size: 13px; font-weight: 600; word-break: break-word; }
 
   /* Panel izquierdo */
   #filter-panel{
@@ -36,29 +67,46 @@
     line-height: 1.25;
   }
 </style>
+<div id="app">
+  <div id="map" style="height:100vh"></div>
 
-<div id="map" style="height:100vh"></div>
+  <!-- Panel de filtros -->
+  <div id="filter-panel">
+    <h3>Filtros</h3>
 
-<!-- Panel de filtros -->
-<div id="filter-panel">
-  <h3>Filtros</h3>
+    <label>Región</label>
+    <select id="sel-region">
+      <option value="">Todas</option>
+    </select>
 
-  <label>Región</label>
-  <select id="sel-region">
-    <option value="">Todas</option>
-  </select>
+    <label>Provincia</label>
+    <select id="sel-provincia" disabled>
+      <option value="">Todas</option>
+    </select>
 
-  <label>Provincia</label>
-  <select id="sel-provincia" disabled>
-    <option value="">Todas</option>
-  </select>
+    <label>Comuna</label>
+    <select id="sel-comuna" disabled>
+      <option value="">Todas</option>
+    </select>
 
-  <label>Comuna</label>
-  <select id="sel-comuna" disabled>
-    <option value="">Todas</option>
-  </select>
+    <label class="chk">
+      <input type="checkbox" id="toggle-formaciones" />
+      <span>Formaciones</span>
+    </label>
 
-  <button id="btn-clear" type="button">Limpiar</button>
+    <button id="btn-clear" type="button">Limpiar</button>
+  </div>
+  <!-- Sidebar derecho -->
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar__header">
+      <h3>Selección</h3>
+      <button id="btnClear" class="btn">Limpiar</button>
+    </div>
+
+    <div id="sidebarContent" class="sidebar__content">
+      <p class="muted">Haz click en un hexágono para ver detalles.</p>
+    </div>
+  </aside>
 </div>
 <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
 
@@ -68,6 +116,15 @@
     selectEl.innerHTML = "";
     if(includeAll) selectEl.append(new Option("Todas", ""));
     pairs.forEach(({code, name}) => selectEl.append(new Option(name, String(code))));
+  }
+
+  function escapeHtml(str) {
+    return String(str)
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#039;");
   }
 
   const map = new maplibregl.Map({
@@ -85,11 +142,13 @@
     const selProv   = document.getElementById("sel-provincia");
     const selCom    = document.getElementById("sel-comuna");
     const btnClear  = document.getElementById("btn-clear");
+    const chkFormaciones = document.getElementById("toggle-formaciones");
     // === CONFIG: AJUSTA ESTO SEGÚN TU style.json ===
     // 1) El "source" que contiene tus tiles (en style.json -> sources -> <id>)
     const SOURCE_ID = "tegola";     // <-- cambia si tu source se llama distinto
     // 2) El "source-layer" dentro del tile (nombre de capa MVT; en Tegola suele ser el name del provider_layer)
-    const SOURCE_LAYER = "hex5km";  // <-- cambia si tu capa se llama distinto
+    const SOURCE_LAYER = "hex5km";  // <-- cambiar si tu capa se llama distinto
+    const FORM_LAYERS = ["formaciones-line"];
     // =================================================
 
     // Si tu style.json NO trae el source, puedes agregarlo aquí (descomenta y ajusta URL):
@@ -104,7 +163,7 @@
     }
     */
 
-    // 1) Agrega una capa fill con gradiente semáforo basado en id_hex (1..39735)
+    // 1) Agrega una capa fill con gradiente semáforo basado en riqueza_sp
     // La insertamos antes de la primera capa de símbolos, para no tapar labels (si existen).
     const firstSymbolLayerId = (map.getStyle().layers || []).find(l => l.type === "symbol")?.id;
 
@@ -120,10 +179,10 @@
             "fill-color": [
               "interpolate",
               ["linear"],
-              ["to-number", ["coalesce", ["get", "id_hex"], 1]],
-              1, "#00c853",        // verde
-              19868, "#ffeb3b",    // amarillo (mitad)
-              39735, "#d50000"     // rojo
+              ["to-number", ["coalesce", ["get", "riqueza_sp"], 1]],
+              0, "#00c853",        // verde
+              300, "#ffeb3b",    // amarillo (mitad)
+              595, "#d50000"     // rojo
             ],
             "fill-opacity": 0.55
           }
@@ -165,7 +224,43 @@
     // =========================
     // CARGA DE SELECTS + FILTRO
     // =========================
-    const FILTER_LAYERS = ["hex5km-fill-semaforo", "hex5km-line"];
+    const FILTER_LAYERS = ["hex5km-fill-semaforo", "hex5km-line", "formaciones-line"];
+
+    // =========================
+    // Sidebar render
+    // =========================
+    function renderSelection(props = null) {
+      if (!props) {
+        sidebarContent.innerHTML = `<p class="muted">Haz click en un hexágono para ver detalles.</p>`;
+        return;
+      }
+
+      // Ajusta/expande estos campos a tu gusto
+      const fields = [
+        ["id_hex", props.id_hex],
+        ["cut_reg", props.cut_reg],
+        ["cut_prov", props.cut_prov],
+        ["cut_com", props.cut_com],
+        ["region", props.region],
+        ["provincia", props.provincia],
+        ["comuna", props.comuna],
+      ].filter(([k, v]) => v !== undefined && v !== null && v !== "");
+
+      sidebarContent.innerHTML = `
+        <div class="row">
+          ${fields.map(([k, v]) => `
+            <div class="kv">
+              <div class="k">${escapeHtml(k)}</div>
+              <div class="v">${escapeHtml(v)}</div>
+            </div>
+          `).join("")}
+        </div>
+        <details>
+          <summary>Ver JSON completo</summary>
+          <pre style="white-space:pre-wrap; font-size:12px; border:1px solid #eee; padding:10px; border-radius:10px; background:#fafafa;">${escapeHtml(JSON.stringify(props, null, 2))}</pre>
+        </details>
+      `;
+    }
 
     function applyHexFilter(){
       const cut_reg  = selRegion.value;
@@ -180,7 +275,13 @@
       const expr = clauses.length > 1 ? clauses : null;
 
       FILTER_LAYERS.forEach(layerId => {
-        if (map.getLayer(layerId)) map.setFilter(layerId, expr);
+        if (!map.getLayer(layerId)) return;
+
+        // si es capa de formaciones y el checkbox está apagado, no tocar filtro
+        const isForm = FORM_LAYERS.includes(layerId);
+        if (isForm && !chkFormaciones.checked) return;
+
+        map.setFilter(layerId, expr);
       });
     }
 
@@ -255,7 +356,23 @@
       FILTER_LAYERS.forEach(layerId => {
         if (map.getLayer(layerId)) map.setFilter(layerId, null);
       });
+
+      chkFormaciones.checked = false;
+      FORM_LAYERS.forEach(id => {
+        if (map.getLayer(id)) map.setLayoutProperty(id, "visibility", "none");
+      });
     });
+
+    chkFormaciones.addEventListener("change", () => {
+      const vis = chkFormaciones.checked ? "visible" : "none";
+      FORM_LAYERS.forEach(id => {
+        if (map.getLayer(id)) map.setLayoutProperty(id, "visibility", vis);
+      });
+
+      // opcional: si quieres que al activar se aplique el filtro actual
+      applyHexFilter();
+    });
+
 
 
     // =========================
@@ -276,6 +393,8 @@
 
       const f = features.find(x => x.properties && x.properties.id_hex) || features[0];
       const idHex = f.properties?.id_hex ?? "(sin id_hex)";
+
+      renderSelection(f.properties || {});
 
       new maplibregl.Popup()
         .setLngLat(e.lngLat)
