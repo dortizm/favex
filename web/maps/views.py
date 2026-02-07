@@ -115,7 +115,7 @@ def hex_formaciones(request):
     )
     SELECT
       f.gid AS id,
-      f.nombre AS nombre,
+      f.formacion AS nombre,
       ST_Area(ST_Intersection(f.geom_3857, h.geom_3857)) / 1000000.0 AS inter_km2
     FROM public.formaciones f
     JOIN h ON (f.geom_3857 && h.geom_3857)

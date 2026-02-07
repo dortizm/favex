@@ -229,13 +229,12 @@
     // =========================
     // Sidebar render
     // =========================
-    function renderSelection(props = null) {
+    async function renderSelection(props = null) {
       if (!props) {
         sidebarContent.innerHTML = `<p class="muted">Haz click en un hexágono para ver detalles.</p>`;
         return;
       }
 
-      // Ajusta/expande estos campos a tu gusto
       const fields = [
         ["id_hex", props.id_hex],
         ["cut_reg", props.cut_reg],
@@ -244,8 +243,10 @@
         ["region", props.region],
         ["provincia", props.provincia],
         ["comuna", props.comuna],
+        ["riqueza_sp", props.riqueza_sp],
       ].filter(([k, v]) => v !== undefined && v !== null && v !== "");
 
+      // Render base inmediato
       sidebarContent.innerHTML = `
         <div class="row">
           ${fields.map(([k, v]) => `
@@ -255,12 +256,50 @@
             </div>
           `).join("")}
         </div>
-        <details>
-          <summary>Ver JSON completo</summary>
-          <pre style="white-space:pre-wrap; font-size:12px; border:1px solid #eee; padding:10px; border-radius:10px; background:#fafafa;">${escapeHtml(JSON.stringify(props, null, 2))}</pre>
-        </details>
+        <div id="formacionesBlock">
+          <p class="muted">Cargando formaciones…</p>
+        </div>
       `;
+
+      // Si no hay id_hex, no podemos consultar
+      const idHex = props.id_hex;
+      if (!idHex) {
+        document.getElementById("formacionesBlock").innerHTML = `<p class="muted">Sin id_hex para consultar formaciones.</p>`;
+        return;
+      }
+
+      // Consulta al backend para el cruce
+      try {
+        const res = await fetchJSON(`/api/hex-formaciones/?id_hex=${encodeURIComponent(idHex)}`);
+        const items = (res && res.ok && Array.isArray(res.items)) ? res.items : [];
+        document.getElementById("formacionesBlock").innerHTML = renderFormaciones(items);
+      } catch (err) {
+        console.error(err);
+        document.getElementById("formacionesBlock").innerHTML = `<p class="muted">Error consultando formaciones.</p>`;
+      }
     }
+
+    function renderFormaciones(items = []) {
+        if (!items?.length) {
+          return `<p class="muted">Sin intersecciones con formaciones.</p>`;
+        }
+
+        const top = items.slice(0, 10); // muestra máx 10 (ajusta)
+        return `
+          <div style="margin-top:10px;">
+            <div class="k" style="margin: 6px 0;">Formaciones (intersección)</div>
+            <div style="border:1px solid #eee; border-radius:10px; overflow:hidden;">
+              ${top.map((x, i) => `
+                <div style="padding:8px 10px; border-top:${i ? "1px solid #eee" : "0"}; background:#fff;">
+                  <div class="v" style="font-size:13px;">${escapeHtml(x.nombre ?? x.name ?? "Sin nombre")}</div>
+                  ${x.inter_km2 != null ? `<div class="k">${escapeHtml(Number(x.inter_km2).toFixed(3))} km²</div>` : ``}
+                </div>
+              `).join("")}
+            </div>
+            ${items.length > top.length ? `<p class="muted" style="margin-top:8px;">Mostrando ${top.length} de ${items.length}.</p>` : ``}
+          </div>
+        `;
+      }
 
     function applyHexFilter(){
       const cut_reg  = selRegion.value;
@@ -379,7 +418,7 @@
     // Click + mousemove 
     // =========================
 
-    map.on("click", (e) => {
+    map.on("click", async (e) => {
       const z = map.getZoom();
       const pad = Math.round(Math.min(300, Math.max(50, z * 5))); // 6..20 px aprox
 
@@ -394,7 +433,15 @@
       const f = features.find(x => x.properties && x.properties.id_hex) || features[0];
       const idHex = f.properties?.id_hex ?? "(sin id_hex)";
 
-      renderSelection(f.properties || {});
+      const sidebarContent = document.getElementById("sidebarContent");
+
+      async function fetchJSON(url){
+        const res = await fetch(url);
+        if(!res.ok) throw new Error("HTTP " + res.status + " en " + url);
+        return await res.json();
+      }
+
+      await renderSelection(f.properties || {});
 
       new maplibregl.Popup()
         .setLngLat(e.lngLat)
