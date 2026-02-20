@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+<div id="heroCarousel" class="carousel slide carousel-fade position-absolute top-0 start-0 w-100 h-100" data-bs-ride="carousel" style="z-index: 0;">
+    <div class="carousel-inner h-100">
+        <div class="carousel-item active h-100" data-bs-interval="4000">
+            <img src="{% static 'images/carrusel/img1.jpg' %}" class="d-block w-100 h-100 object-fit-cover" alt="Fondo 1">
+        </div>
+        <div class="carousel-item h-100" data-bs-interval="4000">
+            <img src="{% static 'images/carrusel/img-2.jpg' %}" class="d-block w-100 h-100 object-fit-cover" alt="Fondo 2">
+        </div>
+         <div class="carousel-item h-100" data-bs-interval="4000">
+            <img src="{% static 'images/carrusel/img-3.jpg' %}" class="d-block w-100 h-100 object-fit-cover" alt="Fondo 2">
+        </div>
+    </div>
+    <div class="carousel-overlay"></div>
+</div>
+
+<div class="container-favex position-relative w-100" style="z-index: 2;">
+    <div class="row"> 
+        <div class="col-12 col-md-10 col-lg-5">
+            
+            <div class="glass-card p-3 p-lg-4 mx-2 mx-lg-0">
+                <h1 class="fs-3 display-lg-6 fw-bold mb-2 mb-lg-3 text-white">
+                    Plataforma de prioridades de conservación de formaciones Xerofíticas
+                </h1>
+                <p class="text-light mb-3 opacity-90 small-text">
+                    Herramienta de apoyo a la identificación de áreas prioritarias para la conservación, integrando valor ecológico, amenazas y nivel de protección.
+                </p>
+                <div class="d-flex flex-column flex-sm-row gap-2">
+                    <a href="{% url 'map' %}" class="btn btn-favex btn-green py-2 small-btn">Ir al mapa</a>
+                    <a href="#" class="btn btn-favex btn-outline-glass py-2 small-btn">Documentos técnicos</a>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -20,8 +20,9 @@ max_zoom = "${TEGOLA_MAX_ZOOM}"
 [[maps.layers]]
 name = "formaciones"
 provider_layer = "pg.formaciones"
-min_zoom = 5
-max_zoom = 20
+min_zoom = 0
+max_zoom = 26
+buffer = 64
 
 [[providers.layers]]
 name = "hex5km"
@@ -58,22 +59,22 @@ name = "formaciones"
 geometry_fieldname = "geom"
 id_fieldname = "gid"
 geometry_type = "multipolygon"
-
+extent = 8192
 sql = """
 SELECT
-  gid,
-  formacion,
-  ST_AsBinary(
-    ST_Boundary(
-      CASE
-        WHEN !ZOOM! <= 6  THEN ST_SimplifyPreserveTopology(geom_3857, 250)
-        WHEN !ZOOM! <= 8  THEN ST_SimplifyPreserveTopology(geom_3857, 120)
-        WHEN !ZOOM! <= 10 THEN ST_SimplifyPreserveTopology(geom_3857, 40)
-        WHEN !ZOOM! <= 20 THEN ST_SimplifyPreserveTopology(geom_3857, 10)
-        ELSE geom_3857
-      END
-    )  
-  ) AS geom
-FROM public.formaciones
-WHERE geom_3857 && !BBOX!;
+    gid,
+    formacion,
+    ST_AsBinary(
+        ST_Subdivide(
+            ST_MakeValid(
+                ST_Buffer( -- Limpieza topológica final
+                    ST_SnapToGrid(ST_Force2D(geom_3857), 0.1), -- Redondeo efectivo
+                    0
+                )
+            ),
+            255
+        )
+    ) AS geom
+FROM public.formaciones_fixed
+WHERE geom_3857 && !BBOX!
 """
