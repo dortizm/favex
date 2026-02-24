@@ -52,11 +52,11 @@ WSGI_APPLICATION = "config.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.contrib.gis.db.backends.postgis",
-        "NAME": os.environ.get("DB_NAME", "geodjango"),
-        "USER": os.environ.get("DB_USER", "geodjango"),
-        "PASSWORD": os.environ.get("DB_PASSWORD", "geodjango"),
-        "HOST": os.environ.get("DB_HOST", "db"),
-        "PORT": os.environ.get("DB_PORT", "5432"),
+        "NAME": os.environ.get("POSTGRES_DB", "geodjango"),
+        "USER": os.environ.get("POSTGRES_USER", "geodjango"),
+        "PASSWORD": os.environ.get("POSTGRES_PASSWORD", "geodjango"),
+        "HOST": os.environ.get("POSTGRES_HOST", "db"),
+        "PORT": os.environ.get("POSTGRES_PORT", "5432"),
     }
 }
 

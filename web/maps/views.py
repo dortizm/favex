@@ -59,92 +59,6 @@ def mvt_style(request):
     map_name = os.environ.get("TEGOLA_MAP_NAME", "base")
     layer_name = os.environ.get("TEGOLA_LAYER_NAME", "hex5km")
 
-    formaciones = [
-      "Bosque caducifolio andino del Bíobío",
-      "Desierto del Tamarugal",
-      "Matorral patagónico con Araucaria",
-      "Bosque esclerófilo costero",
-      "Desierto interior de Taltal",
-      "Estepa altoandina desértica",
-      "Matorral estepario boscoso",
-      "Altas cumbres sin vegetación",
-      "Bosque laurifolio andino",
-      "Desierto de la cuenca superior del río",
-      "Bosque caducifolio de Santiago",
-      "Desierto costero de Tocopilla",
-      "Desierto florido de los llanos",
-      "Bosque siempreverde montano",
-      "Bosque siempreverde andino",
-      "Bosque caducifolio templado andino",
-      "Bosque siempreverde templado costero",
-      "Bosque esclerófilo interior",
-      "Bosque siempreverde templado andino",
-      "Bosque caducifolio templado",
-      "Bosque caducifolio patagónico",
-      "Bosque caducifolio patagónico costero",
-      "Bosque siempreverde patagónico",
-      "Bosque siempreverde patagónico costero",
-      "Bosque siempreverde patagónico montano",
-      "Bosque laurifolio templado costero",
-      "Bosque laurifolio templado andino",
-      "Matorral estepario costero",
-      "Matorral estepario interior",
-      "Matorral estepario andino",
-      "Matorral estepario montano",
-      "Matorral estepario altoandino",
-      "Matorral estepario patagónico",
-      "Matorral estepario patagónico costero",
-      "Matorral estepario patagónico montano",
-      "Matorral estepario magallánico",
-      "Matorral estepario magallánico costero",
-      "Matorral estepario magallánico montano",
-      "Estepa patagónica",
-      "Estepa patagónica costera",
-      "Estepa patagónica montana",
-      "Estepa magallánica",
-      "Estepa magallánica costera",
-      "Estepa magallánica montana",
-      "Pradera patagónica",
-      "Pradera patagónica costera",
-      "Pradera patagónica montana",
-      "Pradera magallánica",
-      "Pradera magallánica costera",
-      "Pradera magallánica montana",
-      "Turberas patagónicas",
-      "Turberas patagónicas costeras",
-      "Turberas patagónicas montanas",
-      "Turberas magallánicas",
-      "Turberas magallánicas costeras",
-      "Turberas magallánicas montanas",
-      "Humedales altoandinos",
-      "Humedales costeros",
-      "Humedales interiores",
-      "Humedales patagónicos",
-      "Humedales magallánicos",
-      "Salinas y salares",
-      "Vegetación halófila costera",
-      "Vegetación halófila interior",
-      "Vegetación psamófila costera",
-      "Vegetación psamófila interior",
-      "Vegetación rupícola",
-      "Vegetación de quebradas",
-      "Vegetación de oasis",
-      "Vegetación de vegas y bofedales",
-      "Vegetación de mallines",
-      "Vegetación de lagunas altoandinas",
-      "Vegetación de riberas",
-      "Vegetación de dunas costeras",
-      "Vegetación de dunas interiores",
-      "Matorral mixto y brezal turboso de Navar",
-      "Estepa patagónica de Magallanes",
-    ]
-
-
-    match_expr = ["match", ["get", "formacion"]]
-    for f in formaciones:
-        match_expr.extend([f, _stable_hsl(f)])
-    match_expr.append("#9e9e9e")  # default
-
     style = {
         "version": 8,
         "sources": {
@@ -166,18 +80,6 @@ def mvt_style(request):
             { "id":"hex5km-line", "type":"line", "source":"tegola", "source-layer":"hex5km",
               "paint":{"line-width":1, "line-opacity":0.4}
             },
-            {
-                "id": "formaciones-fill",
-                "type": "fill",
-                "source": "tegola",
-                "source-layer": "formaciones",
-                "layout": {"visibility": "none"},
-                "paint": {
-                    "fill-opacity": 0.8,
-                    "fill-color": match_expr,
-                },
-            },
-
         ]
     }
     return JsonResponse(style)
