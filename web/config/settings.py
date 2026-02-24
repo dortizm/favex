@@ -70,3 +70,5 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 STATICFILES_DIRS = [BASE_DIR / "static"]
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+GEOSERVER_BASE_URL = os.getenv("GEOSERVER_BASE_URL", "http://localhost:8080")

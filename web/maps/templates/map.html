@@ -284,7 +284,8 @@
     // =========================
 
     const workspace = "fave";
-    const wmsBase = "http://localhost:8080/geoserver/" + workspace + "/wms";
+    const GEO_HOST = window.GEOSERVER_BASE_URL || "http://localhost:8080";
+    const wmsBase = `${GEO_HOST}/geoserver/${workspace}/wms`;
 
     function addRasterLayer(map, layerName, rasterOpacity) {
       rasterLayerId=layerName;

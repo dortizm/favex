@@ -1,4 +1,5 @@
 import json
+from django.conf import settings
 from django.shortcuts import render
 from django.http import JsonResponse
 from django.views.decorators.http import require_GET
@@ -10,7 +11,7 @@ def index(request):
     return render(request, "index.html")
 
 def map(request):
-    return render(request, "map.html")
+    return render(request, "map.html", {"GEOSERVER_BASE_URL": settings.GEOSERVER_BASE_URL})
 
 def regions(request):
     with connection.cursor() as cur:
