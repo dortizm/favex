@@ -73,7 +73,7 @@ function renderDocuments(category, categoryName) {
 
     if (items && items.length > 0) {
         items.forEach(item => {
-            const rutaFinal = `./assets/PDF/${subCarpeta}/${item.archivo}`;
+            const rutaFinal = `/static/docs/${subCarpeta}/${item.archivo}`;
             
             const cleanTitle = item.title.replace(/<br>/g, ' ');
 
