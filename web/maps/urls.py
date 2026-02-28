@@ -4,6 +4,8 @@ from . import views
 urlpatterns = [
     path("", views.index, name="index"),
     path("map", views.map, name="map"),
+    path("documents", views.documents, name="documents"),
+    path("about", views.about, name="about"),
     path("mvt/style.json", views.mvt_style, name="mvt_style"),
     path("api/regions/", views.regions),
     path("api/provinces/", views.provinces),

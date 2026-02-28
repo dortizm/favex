@@ -3,42 +3,73 @@
    ========================================= */
 :root {
     --favex-green: #5C723B;
+    --fave-green-gray: #7c8372;
     --favex-green-dark: #4a5c2f;
+    --fave-green-light: #C9CEC1;
     --glass-bg: rgba(255, 255, 255, 0.15);
     --glass-border: rgba(255, 255, 255, 0.3);
     --satin-gradient: linear-gradient(135deg, #e0e0e0 0%, #f8f8f8 50%, #dcdcdc 100%);
     --font-main: 'Montserrat', sans-serif;
-    
+
     /* Colores Documentos */
     --sage-card-bg: #9aa895;
-    --gray-panel-bg: #dcdcdc;
+    --gray-panel-bg: #E7E8E6;
     --btn-sage-bg: #5f6e45;
     --btn-sage-hover: #4b5736;
 }
 
 body {
     font-family: var(--font-main);
-    min-height: 100vh; /* Permite que crezca si hay contenido */
+    min-height: 100vh;
+    /* Permite que crezca si hay contenido */
     overflow-x: hidden;
 }
 
 /* Clases de utilidad */
-.h-100vh { height: 100vh; }
-.display-lg-6 { font-size: 2.5rem; } 
-.pointer-events-none { pointer-events: none; }
-.pointer-events-auto { pointer-events: auto; }
+.h-100vh {
+    height: 100vh;
+}
+
+.display-lg-6 {
+    font-size: 2.5rem;
+}
+
+.pointer-events-none {
+    pointer-events: none;
+}
+
+.pointer-events-auto {
+    pointer-events: auto;
+}
+
+
+h1 {
+    font-weight: 700;
+    color: var(--fave-green-gray);
+
+}
 
 /* =========================================
    2. CONTENEDOR MAESTRO
    ========================================= */
 .container-favex {
-    width: 100%; 
-    max-width: 1440px; 
-    margin: 0 auto; 
-    padding: 0 20px;
+    width: 100%;
+    max-width: 100% !important;
+    margin: 0;
+    padding: 0 16px;
 }
-@media (min-width: 992px) { .container-favex { padding: 0 80px; } }
-@media (min-width: 1400px) { .container-favex { padding: 0 120px; } }
+
+@media (min-width: 992px) {
+    .container-favex {
+        padding: 0 80px;
+    }
+}
+
+@media (min-width: 1400px) {
+    .container-favex {
+        padding: 0 120px;
+    }
+}
 
 
 /* =========================================
@@ -47,41 +78,153 @@ body {
 
 /* --- NAVBAR --- */
 .nav-pill-custom {
-    display: flex; align-items: center; justify-content: center;
-    width: 150px; padding: 8px 0; border-radius: 50px;
-    border: 1.5px solid var(--favex-green); color: var(--favex-green) !important;
-    background: transparent; font-weight: 600; font-size: 0.9rem; transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 150px;
+    padding: 8px 0;
+    border-radius: 50px;
+    border: 1.5px solid var(--favex-green);
+    color: var(--favex-green) !important;
+    background: transparent;
+    font-weight: 600;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
 }
-.nav-pill-custom:hover { background-color: rgba(92, 114, 59, 0.1); transform: translateY(-1px); }
-.nav-pill-custom.active { background-color: var(--favex-green) !important; color: white !important; box-shadow: 0 4px 6px rgba(92, 114, 59, 0.25); }
+
+.nav-pill-custom:hover {
+    background-color: rgba(92, 114, 59, 0.1);
+    transform: translateY(-1px);
+}
+
+.nav-pill-custom.active {
+    background-color: var(--favex-green) !important;
+    color: white !important;
+    box-shadow: 0 4px 6px rgba(92, 114, 59, 0.25);
+}
 
 /* --- BOTONES --- */
-.btn-favex {
-    padding: 10px 0; width: 100%; max-width: 260px;
-    font-weight: 600; border-radius: 8px; text-align: center; transition: transform 0.2s;
+
+.btn-link1:hover {
+    background-color: #6d8e3d;
 }
-.btn-green { background-color: var(--favex-green); border: 1px solid var(--favex-green); color: white; }
-.btn-outline-glass { background: rgba(255,255,255,0.85); color: #555; border: none; }
+
+
+.btn-favex {
+    padding: 10px 0;
+    width: 100%;
+    max-width: 260px;
+    font-weight: 600;
+    border-radius: 8px;
+    text-align: center;
+    transition: transform 0.2s;
+}
+
+.btn-green {
+    background-color: var(--favex-green);
+    border: 2px solid var(--favex-green-dark);
+    color: white;
+}
+
+.btn-outline-glass {
+    background: rgba(255, 255, 255, 0.85);
+    color: #555;
+    border: 2px solid var(--favex-green-dark);
+}
+
+
+
+/* Color de fondo para el item seleccionado y al pasar el mouse */
+#docFilterContainer .dropdown-item:hover,
+#docFilterContainer .dropdown-item:focus,
+#docFilterContainer .dropdown-item.active {
+    background-color: #198754 !important;
+    /* Tu color específico */
+    color: white !important;
+    outline: none;
+}
+
+/* Borde y sombra de enfoque (focus-ring) con el nuevo color */
+#dropdownMenuButton:focus {
+    border-color: #198754 !important;
+    box-shadow: 0 0 0 0.25rem rgba(25, 135, 84, 0.25) !important;
+}
+
+/* Estilo para el botón cuando está abierto */
+.show>.btn-outline-success.dropdown-toggle {
+    background-color: #198754 !important;
+    color: white !important;
+}
+
+/* Efectos HOVER para botones FAVE-X */
+
+/* Botón General: Efecto de elevación */
+.btn-favex:hover {
+    transform: translateY(-3px);
+    /* Eleva el botón suavemente [cite: 286] */
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    color: white;
+    /* Asegura legibilidad */
+}
+
+/* Hover específico para Botón Verde (Ir al mapa) */
+.btn-green:hover {
+    background-color: var(--favex-green-dark);
+    /* Oscurece el verde para feedback  */
+    border-color: var(--favex-green-dark);
+}
+
+/* Hover específico para Botón Glass (Documentos técnicos) */
+.btn-outline-glass:hover {
+    background-color: #F3EFE7;
+    /* Cambia a color Arena Clara al pasar el cursor  */
+    color: var(--favex-green-dark);
+    /* El texto cambia al verde institucional [cite: 294] */
+    border-color: var(--favex-green-dark);
+}
+
+/* Estado activo (al hacer clic) */
+.btn-favex:active {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+
 
 /* --- FOOTER DESKTOP --- */
 .footer-logo-item {
-    height: 80px; /* Altura estándar escritorio */
-    display: flex; align-items: center; justify-content: center;
-    padding: 5px; 
-    background-color: rgba(255,255,255,0.8); 
+    height: 80px;
+    /* Altura estándar escritorio */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 5px;
+    background-color: rgba(255, 255, 255, 0.8);
     border-radius: 8px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
-.footer-logo-item img { 
-    height: 100%; width: auto; object-fit: contain; max-width: 200px; 
+
+.footer-logo-item img {
+    height: 100%;
+    width: auto;
+    object-fit: contain;
+    max-width: 200px;
 }
 
 .footer-bar-satin {
-    background: var(--satin-gradient); color: #333; font-weight: 600; font-size: 1rem;
-    height: 80px; 
-    padding: 0 25px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.6);
-    box-shadow: 0 4px 10px rgba(0,0,0,0.15); backdrop-filter: blur(5px);
-    display: flex; align-items: center; justify-content: center;
+    background: var(--satin-gradient);
+    color: #333;
+    font-weight: 600;
+    font-size: 1rem;
+    height: 80px;
+    padding: 0 25px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+    backdrop-filter: blur(5px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 
@@ -91,34 +234,101 @@ body {
 
 /* Carrusel Fondo */
 .carousel-overlay {
-    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-    background: linear-gradient(to right, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.2) 100%);
-    z-index: 1; pointer-events: none;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(to right, rgba(0, 0, 0, 0.2) 0%, rgba(0, 0, 0, 0.2) 100%);
+    z-index: 1;
+    pointer-events: none;
 }
-.carousel-item img { filter: brightness(0.9); }
+
+.carousel-item img {
+    filter: brightness(0.9);
+}
 
 /* Tarjeta Vidrio (Glass Card) */
 .glass-card {
-    background: var(--glass-bg); backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px); border: 1px solid var(--glass-border);
-    border-radius: 16px; box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3); color: white;
+    background: var(--glass-bg);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--glass-border);
+    border-radius: 16px;
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+    color: white;
 }
-.glass-card h1 { line-height: 1.2; text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
+
+.glass-card h1 {
+    line-height: 1.2;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
 
 
 /* =========================================
    5. SECCIÓN DOCUMENTOS (Específicos)
    ========================================= */
 
-/* Tarjeta Verde Grisácea (Sidebar) */
+/* Tarjeta Verde Sidebar */
 .sage-card {
-    background-color: var(--sage-card-bg); 
-    min-height: 220px; 
+    background-color: var(--fave-green-gray);
+    min-height: 100px;
+
 }
+
+.sage-card-2 {
+    background-color: var(--sage-card-bg);
+    min-height: 220px;
+}
+
+/* =========================================
+  6. SECCION ACERCA DE 
+   ========================================= */
+
+/* Configuración del contenedor deslizable */
+.custom-slider {
+    scroll-behavior: smooth;
+    /* Movimiento suave al hacer clic en las flechas */
+    scroll-snap-type: x mandatory;
+    /* Hace que las tarjetas "encajen" perfectamente al detenerse */
+    scrollbar-width: none;
+    /* Oculta la barra en Firefox */
+}
+
+/* Oculta la barra de scroll en Chrome/Safari/Edge */
+.custom-slider::-webkit-scrollbar {
+    display: none;
+}
+
+/* Las tarjetas del carrusel */
+.custom-slider .card {
+    scroll-snap-align: start;
+    /* Punto de encaje */
+    transition: transform 0.2s ease;
+}
+
+.custom-slider .card:hover {
+    transform: translateY(-3px);
+    /* Pequeña elevación al pasar el mouse */
+}
+
+/* La imagen de la tarjeta (Miniatura) */
+.gallery-thumb {
+    height: 180px;
+    /* Alto fijo para que todas se vean parejas */
+    object-fit: cover;
+    cursor: pointer;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    /* Separador sutil */
+}
+
+
+/* *********** */
+
 
 /* Panel Gris de Fondo (Derecha) */
 .bg-gray-panel {
-    background-color: var(--gray-panel-bg); 
+    background-color: var(--gray-panel-bg);
 }
 
 /* Botón "Descargar" */
@@ -130,6 +340,7 @@ body {
     font-weight: 500;
     transition: all 0.2s;
 }
+
 .btn-sage:hover {
     background-color: var(--btn-sage-hover);
     border-color: var(--btn-sage-hover);
@@ -146,45 +357,92 @@ body {
    6. RESPONSIVIDAD (Móvil + Tablet hasta 1399px)
    ========================================= */
 @media (max-width: 1399.98px) {
-    
+
     /* A. MENÚ DESPLEGABLE (Hamburguesa) */
     .navbar-collapse {
-        position: fixed; 
-        top: 70px; left: 0; width: 100%; 
-        background: white; padding: 1.5rem 2rem;
+        position: fixed;
+        top: 70px;
+        left: 0;
+        width: 100%;
+        background: white;
+        padding: 1.5rem 2rem;
         border-bottom: 1px solid #eee;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.15);
-        max-height: calc(100vh - 70px); overflow-y: auto; z-index: 9999;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+        max-height: calc(100vh - 70px);
+        overflow-y: auto;
+        z-index: 9999;
     }
 
     /* Estilo de Botones en Menú Móvil */
     .navbar-nav .nav-pill-custom {
-        width: 100%; margin-bottom: 10px; padding: 15px 20px;
-        border-radius: 12px; justify-content: flex-start; 
-        font-size: 1.1rem; background-color: #f8f9fa;
-        border: 1px solid transparent; color: #333 !important;
+        width: 100%;
+        margin-bottom: 10px;
+        padding: 15px 20px;
+        border-radius: 12px;
+        justify-content: flex-start;
+        font-size: 1.1rem;
+        background-color: #f8f9fa;
+        border: 1px solid transparent;
+        color: #333 !important;
     }
-    .nav-pill-custom.active { background-color: var(--favex-green) !important; color: white !important; }
-    .nav-pill-custom i { margin-right: 15px; font-size: 1.3rem; }
+
+    .nav-pill-custom.active {
+        background-color: var(--favex-green) !important;
+        color: white !important;
+    }
+
+    .nav-pill-custom i {
+        margin-right: 15px;
+        font-size: 1.3rem;
+    }
 
     /* B. FOOTER MÓVIL */
-    .footer-logo-item { height: 80px; padding: 5px; } 
-    .footer-bar-satin { height: 80px; font-size: 0.8rem; padding: 0 10px; }
-    
-    footer.fixed-bottom { 
-        position: fixed !important; bottom: 0; padding-bottom: 15px !important;
-        background: linear-gradient(to top, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0) 100%); 
+    .footer-logo-item {
+        height: 80px;
+        padding: 5px;
     }
-    
+
+    .footer-bar-satin {
+        height: 80px;
+        font-size: 0.8rem;
+        padding: 0 10px;
+    }
+
+    footer.fixed-bottom {
+        position: fixed !important;
+        bottom: 0;
+        padding-bottom: 15px !important;
+        background: linear-gradient(to top, rgba(0, 0, 0, 0.2) 0%, rgba(0, 0, 0, 0) 100%);
+    }
+
     /* C. AJUSTES TARJETAS */
-    .glass-card { margin-bottom: 110px; padding: 1.5rem !important; } 
-    .small-text { font-size: 0.9rem; margin-bottom: 1rem !important;}
-    .small-btn { padding: 10px 0; font-size: 1rem; }
+    .glass-card {
+        margin-bottom: 110px;
+        padding: 1.5rem !important;
+    }
+
+    .small-text {
+        font-size: 0.9rem;
+        margin-bottom: 1rem !important;
+    }
+
+    .small-btn {
+        padding: 10px 0;
+        font-size: 1rem;
+    }
 }
 
 /* Ajustes Extra Pequeños*/
 @media (max-width: 380px) {
-    .glass-card h1 { font-size: 1.5rem; }
-    .footer-logo-item { height: 40px; }
-    .footer-bar-satin { display: none; } 
+    .glass-card h1 {
+        font-size: 1.5rem;
+    }
+
+    .footer-logo-item {
+        height: 40px;
+    }
+
+    .footer-bar-satin {
+        display: none;
+    }
 }

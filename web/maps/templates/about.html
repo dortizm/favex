@@ -1,0 +1,270 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+<h1 class="fs-2 text-left mt-5 mb-4">Acerca del proyecto</h1>
+
+<div class="row g-4 mt-2">
+    <div class="col-12 col-lg-4 col-xl-3">
+        <img src="{% static 'images/logo/logotipo-fondo-corporativo.png' %}" alt="Imagen Acerca de"
+            class="img-fluid rounded-2" height="100px">
+    </div>
+
+    <div class="col-12 col-lg-8 col-xl-9">
+        <div class="bg-gray-panel px-4 p-lg-5 rounded-2">
+            <h3 class="fw-bold mb-3 text-dark opacity-75">Propósito y Objetivo</h3>
+            <p class="mb-0">
+                La Plataforma de Prioridades de Conservación de Formaciones Xerofíticas es una herramienta web
+                GIS diseñada para apoyar la identificación de áreas prioritarias para la conservación,
+                integrando información de valor ecológico, amenazas y protección existente. Los resultados se
+                organizan en una malla de hexágonos de 1 km, lo que permite una lectura territorial homogénea y
+                comparable. La plataforma entrega fichas interpretables y exportables (mapas y PDF), orientadas
+                a facilitar procesos de planificación y gestión pública.
+            </p>
+        </div>
+    </div>
+</div>
+
+<h4 class="fw-bold mt-5 mb-4 opacity-75">Pilares de Acción</h4>
+<div class="row g-3">
+    <div class="col-12 col-md-6 col-lg-3">
+        <div class="bg-white p-4 rounded-2 h-100 shadow-sm border border-light-subtle d-flex flex-column">
+            <i class="bi bi-flower1 fs-2 mb-3 text-success"></i>
+            <h5 class="fw-bold h6 text-dark">Identificar patrones de biodiversidad</h5>
+            <p class="small text-muted mb-0">
+                Analizar la diversidad taxonómica, evolutiva y funcional a lo largo de gradientes geográficos.
+            </p>
+        </div>
+    </div>
+
+    <div class="col-12 col-md-6 col-lg-3">
+        <div class="bg-white p-4 rounded-2 h-100 shadow-sm border border-light-subtle d-flex flex-column">
+            <i class="bi bi-geo-alt-fill fs-2 mb-3 text-success"></i>
+            <h5 class="fw-bold h6 text-dark">Evaluar el endemismo</h5>
+            <p class="small text-muted mb-0">
+                Mapear la singularidad de las especies y su representatividad en el ecosistema original.
+            </p>
+        </div>
+    </div>
+
+    <div class="col-12 col-md-6 col-lg-3">
+        <div class="bg-white p-4 rounded-2 h-100 shadow-sm border border-light-subtle d-flex flex-column">
+            <i class="bi bi-broadcast-pin fs-2 mb-3 text-success"></i>
+            <h5 class="fw-bold h6 text-dark">Monitorear la resiliencia</h5>
+            <p class="small text-muted mb-0">
+                Utilizar información satelital para identificar la capacidad de recuperación de las formaciones
+                (Criterio Hábitat).
+            </p>
+        </div>
+    </div>
+
+    <div class="col-12 col-md-6 col-lg-3">
+        <div class="bg-white p-4 rounded-2 h-100 shadow-sm border border-light-subtle d-flex flex-column">
+            <i class="bi bi-people-fill fs-2 mb-3 text-success"></i>
+            <h5 class="fw-bold h6 text-dark">Visibilizar el rol ecológico</h5>
+            <p class="small text-muted mb-0">
+                Realizar talleres y difusión para dar visibilidad al rol ecológico de las formaciones en Chile
+                Central.
+            </p>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mt-4">
+    <div class="col-12 col-lg-8">
+        <div class="bg-gray-panel p-4 p-lg-5 rounded-2">
+            <h3 class="fw-bold mb-4 text-dark opacity-75 h4">¿Cómo se interpreta la prioridad? </h3>
+            <p class="mb-0 italic small bg-white p-3 rounded-1 border-start border-4 border-success">
+                La prioridad aumenta cuando el valor ecológico es alto y el nivel de protección es bajo,
+                considerando además la presencia de amenazas. La plataforma constituye un insumo técnico de
+                apoyo a la planificación y no reemplaza procesos normativos ni decisiones administrativas.
+            </p>
+        </div>
+    </div>
+    <div class="col-12 col-lg-4">
+        <div class="sage-card p-4 rounded-2 h-100 text-white shadow-sm">
+            <h3 class="fw-bold mb-3 h5">Marco Legal</h3>
+            <p class="small opacity-90 fw-dark mb-0">
+                Este proyecto se enmarca en la <strong>Ley 20.283</strong> sobre Recuperación del Bosque Nativo
+                y Fomento Forestal. Es desarrollado por el Instituto de Ecología y Biodiversidad (IEB) como un
+                insumo técnico que no reemplaza procesos normativos ni decisiones administrativas.
+            </p>
+        </div>
+    </div>
+</div>
+
+<div class="mt-5 position-relative px-4">
+    <h4 class="fw-bold mb-4 text-dark opacity-75">Galería del territorio</h4>
+
+    <button
+        class="btn btn-white shadow-sm border position-absolute top-50 start-0 translate-middle-y z-2 rounded-circle d-flex align-items-center justify-content-center"
+        id="slideLeftBtn" style="width: 40px; height: 40px;">
+        <i class="bi bi-chevron-left text-secondary"></i>
+    </button>
+
+    <div class="d-flex gap-3 overflow-x-auto py-3 px-1 custom-slider" id="faveGallerySlider">
+
+        <div class="card border-0 bg-light shadow-sm flex-shrink-0" style="width: 220px;">
+            <img src="{% static 'images/carrusel_about/imagenes-400x400/andacoyo.jpg' %}"
+                data-large-src="{% static 'images/carrusel_about/imagenes-1920x1080/andacoyo.jpg' %}"
+                class="card-img-top gallery-thumb" alt="Andacoyo" data-bs-toggle="modal"
+                data-bs-target="#imageLightboxModal">
+            <div class="card-body p-2 text-center">
+                <p class="small mb-0 text-muted">Andacoyo</p>
+            </div>
+        </div>
+
+        <div class="card border-0 bg-light shadow-sm flex-shrink-0" style="width: 220px;">
+            <img src="{% static 'images/carrusel_about/imagenes-400x400/casablanca.jpg' %}"
+                data-large-src="{% static 'images/carrusel_about/imagenes-1920x1080/casablanca.jpg' %}"
+                class="card-img-top gallery-thumb" alt="Casablanca" data-bs-toggle="modal"
+                data-bs-target="#imageLightboxModal">
+            <div class="card-body p-2 text-center">
+                <p class="small mb-0 text-muted">Casablanca</p>
+            </div>
+        </div>
+
+        <div class="card border-0 bg-light shadow-sm flex-shrink-0" style="width: 220px;">
+            <img src="{% static 'images/carrusel_about/imagenes-400x400/pampa-pumo.jpg' %}"
+                data-large-src="{% static 'images/carrusel_about/imagenes-1920x1080/pampa-pumo.jpg' %}"
+                class="card-img-top gallery-thumb" alt="Pampa del Pumo" data-bs-toggle="modal"
+                data-bs-target="#imageLightboxModal">
+            <div class="card-body p-2 text-center">
+                <p class="small mb-0 text-muted">Pampa del Pumo</p>
+            </div>
+        </div>
+
+        <div class="card border-0 bg-light shadow-sm flex-shrink-0" style="width: 220px;">
+            <img src="{% static 'images/carrusel_about/imagenes-400x400/pica-a-la-cordillera.jpg' %}"
+                data-large-src="{% static 'images/carrusel_about/imagenes-1920x1080/pica-a-la-cordillera.jpg' %}"
+                class="card-img-top gallery-thumb" alt="Pica a la Cordillera" data-bs-toggle="modal"
+                data-bs-target="#imageLightboxModal">
+            <div class="card-body p-2 text-center">
+                <p class="small mb-0 text-muted">Pica a la Cordillera</p>
+            </div>
+        </div>
+
+        <div class="card border-0 bg-light shadow-sm flex-shrink-0" style="width: 220px;">
+            <img src="{% static 'images/carrusel_about/imagenes-400x400/potrerillos.jpg' %}"
+                data-large-src="{% static 'images/carrusel_about/imagenes-1920x1080/potrerillos.jpg' %}"
+                class="card-img-top gallery-thumb" alt="Potrerillos" data-bs-toggle="modal"
+                data-bs-target="#imageLightboxModal">
+            <div class="card-body p-2 text-center">
+                <p class="small mb-0 text-muted">Potrerillos</p>
+            </div>
+        </div>
+
+        <div class="card border-0 bg-light shadow-sm flex-shrink-0" style="width: 220px;">
+            <img src="{% static 'images/carrusel_about/imagenes-400x400/quebrada-blanca.jpg' %}"
+                data-large-src="{% static 'images/carrusel_about/imagenes-1920x1080/quebrada-blanca.jpg' %}"
+                class="card-img-top gallery-thumb" alt="Quebrada Blanca" data-bs-toggle="modal"
+                data-bs-target="#imageLightboxModal">
+            <div class="card-body p-2 text-center">
+                <p class="small mb-0 text-muted">Quebrada Blanca</p>
+            </div>
+        </div>
+
+        <div class="card border-0 bg-light shadow-sm flex-shrink-0" style="width: 220px;">
+            <img src="{% static 'images/carrusel_about/imagenes-400x400/salar-ascotan.jpg' %}"
+                data-large-src="{% static 'images/carrusel_about/imagenes-1920x1080/salar-ascotan.jpg' %}"
+                class="card-img-top gallery-thumb" alt="Salar Ascotán" data-bs-toggle="modal"
+                data-bs-target="#imageLightboxModal">
+            <div class="card-body p-2 text-center">
+                <p class="small mb-0 text-muted">Salar Ascotán</p>
+            </div>
+        </div>
+
+        <div class="card border-0 bg-light shadow-sm flex-shrink-0" style="width: 220px;">
+            <img src="{% static 'images/carrusel_about/imagenes-400x400/salar-atacama.jpg' %}"
+                data-large-src="{% static 'images/carrusel_about/imagenes-1920x1080/salar-atacama.jpg' %}"
+                class="card-img-top gallery-thumb" alt="Salar Atacama" data-bs-toggle="modal"
+                data-bs-target="#imageLightboxModal">
+            <div class="card-body p-2 text-center">
+                <p class="small mb-0 text-muted">Salar Atacama</p>
+            </div>
+        </div>
+
+        <div class="card border-0 bg-light shadow-sm flex-shrink-0" style="width: 220px;">
+            <img src="{% static 'images/carrusel_about/imagenes-400x400/salar-lagunilla.jpg' %}"
+                data-large-src="{% static 'images/carrusel_about/imagenes-1920x1080/salar-lagunillas.jpg' %}"
+                class="card-img-top gallery-thumb" alt="Salar Lagunilla" data-bs-toggle="modal"
+                data-bs-target="#imageLightboxModal">
+            <div class="card-body p-2 text-center">
+                <p class="small mb-0 text-muted">Salar Lagunilla</p>
+            </div>
+        </div>
+
+
+        <div class="card border-0 bg-light shadow-sm flex-shrink-0" style="width: 220px;">
+            <img src="{% static 'images/carrusel_about/imagenes-400x400/subiendo-putre.jpg' %}"
+                data-large-src="{% static 'images/carrusel_about/imagenes-1920x1080/subiendo-putre.jpg' %}"
+                class="card-img-top gallery-thumb" alt="Subiendo Putre" data-bs-toggle="modal"
+                data-bs-target="#imageLightboxModal">
+            <div class="card-body p-2 text-center">
+                <p class="small mb-0 text-muted">Subiendo Putre</p>
+            </div>
+        </div>
+
+        <div class="card border-0 bg-light shadow-sm flex-shrink-0" style="width: 220px;">
+            <img src="{% static 'images/carrusel_about/imagenes-400x400/tierra-amarilla.jpg' %}"
+                data-large-src="{% static 'images/carrusel_about/imagenes-1920x1080/tierra-amarilla.jpg' %}"
+                class="card-img-top gallery-thumb" alt="Tierra Amarilla" data-bs-toggle="modal"
+                data-bs-target="#imageLightboxModal">
+            <div class="card-body p-2 text-center">
+                <p class="small mb-0 text-muted">Tierra Amarilla</p>
+            </div>
+        </div>
+
+
+        <div class="card border-0 bg-light shadow-sm flex-shrink-0" style="width: 220px;">
+            <img src="{% static 'images/carrusel_about/imagenes-400x400/vega-pascua.jpg' %}"
+                data-large-src="{% static 'images/carrusel_about/imagenes-1920x1080/vega-pascua.jpg' %}"
+                class="card-img-top gallery-thumb" alt="Vega Pascua" data-bs-toggle="modal"
+                data-bs-target="#imageLightboxModal">
+            <div class="card-body p-2 text-center">
+                <p class="small mb-0 text-muted">Vega Pascua</p>
+            </div>
+        </div>
+
+    </div>
+
+    <button
+        class="btn btn-white shadow-sm border position-absolute top-50 end-0 translate-middle-y z-2 rounded-circle d-flex align-items-center justify-content-center"
+        id="slideRightBtn" style="width: 40px; height: 40px;">
+        <i class="bi bi-chevron-right text-secondary"></i>
+    </button>
+</div>
+<div class="modal fade" id="imageLightboxModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-xl modal-dialog-centered modal-fullscreen-lg-down">
+    <div class="modal-content bg-transparent border-0 position-relative">
+      
+      <div class="modal-header border-0 pb-0 justify-content-end position-absolute top-0 end-0 z-3">
+        <button type="button" class="btn-close btn-close-white shadow-none m-2" data-bs-dismiss="modal"
+            aria-label="Close" style="filter: invert(1) grayscale(100%) brightness(200%);"></button>
+      </div>
+      
+      <div class="modal-body p-0 d-flex flex-column align-items-center justify-content-center text-center" style="min-height: 50vh;">
+        <div class="position-relative d-flex align-items-center justify-content-center w-100 h-100">
+          
+          <button id="modalPrevBtn" class="btn btn-dark bg-opacity-50 text-white position-absolute start-0 z-3 ms-2 ms-md-4 rounded-circle border-0 d-flex align-items-center justify-content-center" style="width: 50px; height: 50px; backdrop-filter: blur(4px);">
+              <i class="bi bi-chevron-left fs-4"></i>
+          </button>
+
+          <div id="imageLoadingSpinner" class="spinner-border text-light position-absolute z-1" role="status" style="width: 3rem; height: 3rem;">
+            <span class="visually-hidden">Cargando...</span>
+          </div>
+          
+          <img id="expandedGalleryImg" src="" class="img-fluid rounded-2 shadow-lg position-relative z-2" alt="Imagen ampliada" style="max-height: 85vh; cursor: pointer; opacity: 0;" data-bs-dismiss="modal">
+
+          <button id="modalNextBtn" class="btn btn-dark bg-opacity-50 text-white position-absolute end-0 z-3 me-2 me-md-4 rounded-circle border-0 d-flex align-items-center justify-content-center" style="width: 50px; height: 50px; backdrop-filter: blur(4px);">
+              <i class="bi bi-chevron-right fs-4"></i>
+          </button>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block javascript %}
+<script src="{% static 'js/about.js' %}"></script>
+{% endblock %}

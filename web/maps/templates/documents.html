@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+<h1 class=" fs-2 text-left mt-5 mb-4"> Documentación técnica</h1>
+
+<div class="row g-4 mt-2">
+
+    <div class="col-12 col-lg-4 col-xl-2">
+
+
+        <div class="sage-card p-4 rounded-1 shadow-sm border-0 mb-4 text-white">
+            <div class="d-flex align-items-center mb-3">
+                <i class="bi-file-earmark-text  fs-4 me-2"></i>
+                <h2 class="h6 fw-bold mb-0">Seleccionar</h2>
+            </div>
+            <p class="small mb-0 opacity-90 fw-light">
+                <strong> los filtros para visualizar la información de la documentación:</strong> normativa ,
+                informes técnicos y
+                articulos.
+            </p>
+        </div>
+
+        <div class="sticky-top" style="top: 90px; z-index: 1;">
+            <div class="sticky-top" style="top: 90px; z-index: 1;">
+                <div class="dropdown w-100" id="docFilterContainer">
+                    <button
+                        class="btn btn-outline-success dropdown-toggle w-100 text-start py-3 shadow-sm rounded-1 text-secondary d-flex justify-content-between align-items-center"
+                        type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false"
+                        style="font-size: 1rem; border-color: #198754; background-color: white;">
+                        Artículos
+                    </button>
+                    <ul class="dropdown-menu w-100 shadow-sm border-success rounded-1"
+                        aria-labelledby="dropdownMenuButton">
+                        <li><a class="dropdown-item active" href="#" data-value="articulos">Artículos</a></li>
+                        <li><a class="dropdown-item" href="#" data-value="eia">EIA</a></li>
+                        <li><a class="dropdown-item" href="#" data-value="informes">Informes técnicos</a></li>
+                        <li><a class="dropdown-item" href="#" data-value="normativos">Normativos</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12 col-lg-8 col-xl-10">
+
+        <div class="bg-gray-panel p-4 p-lg-5 rounded-2 h-100">
+
+            <h3 id="sectionTitle" class="fw-bold mb-4 text-center text-dark opacity-75">Artículos</h3>
+
+            <div id="cardsContainer" class="row g-4">
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="pdfViewerModal" tabindex="-1" aria-labelledby="pdfViewerModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg rounded-3">
+
+                <div class="modal-header bg-light border-bottom-0">
+                    <h5 class="modal-title fw-bold text-dark" id="pdfViewerModalLabel">Visor de Documento</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+
+                <div class="modal-body p-0 bg-secondary bg-opacity-10">
+                    <iframe id="pdfIframe" src="" width="100%" style="height: 75vh; border: none;"></iframe>
+                </div>
+
+                <div class="modal-footer bg-white border-top-0 d-flex justify-content-between">
+                    <button type="button" class="btn btn-outline-secondary px-4" data-bs-dismiss="modal">Cerrar
+                        visor</button>
+
+                    <a href="#" id="modalDownloadBtn"
+                        class="btn btn-favex btn-green text-white px-4 d-flex align-items-center"
+                        style="background-color: #5C723B; border-color: #5C723B;" download>
+                        <i class="bi bi-download me-2"></i> Descargar PDF
+                    </a>
+                </div>
+
+            </div>
+        </div>
+    </div>
+{% endblock %}
+{% block javascript %}
+<script src="{% static 'js/documents.js' %}"></script>
+{% endblock %}

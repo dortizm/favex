@@ -3,14 +3,12 @@
 {% block content %}
 <link href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" rel="stylesheet" />
 <style>
-  #app { position: relative; height: 100vh; width: 100vw; overflow: hidden; }
-  #map { position: absolute; inset: 0; }
-
   .sidebar{
     position: absolute;
-    top: 0; right: 0;
+    top: 200px; 
+    right: 0;
     width: 360px;
-    height: 100%;
+    height: 500px;
     background: #fff;
     border-left: 1px solid #e5e5e5;
     box-shadow: -6px 0 18px rgba(0,0,0,.08);
@@ -26,90 +24,78 @@
   }
   .sidebar__header h3{ margin: 0; font-size: 16px; }
   .sidebar__content{ font-size: 13px; line-height: 1.35; }
-  .muted{ color: #666; margin: 0; }
-  .btn{
-    border: 1px solid #ddd; background: #fafafa;
-    padding: 6px 10px; border-radius: 8px; cursor: pointer;
-  }
-  .row{ display: grid; grid-template-columns: 1fr 1fr; gap: 6px 10px; margin: 10px 0; }
+
   .kv{ padding: 8px; border: 1px solid #eee; border-radius: 10px; background: #fcfcfc; }
   .k{ font-size: 11px; color:#666; }
   .v{ font-size: 13px; font-weight: 600; word-break: break-word; }
-
-  /* Panel izquierdo */
-  #filter-panel{
-    position: absolute;
-    top: 12px;
-    left: 12px;              /* <-- izquierda */
-    width: 280px;
-    background: rgba(255,255,255,0.95);
-    border-radius: 12px;
-    padding: 12px 12px 10px;
-    box-shadow: 0 6px 18px rgba(0,0,0,0.15);
-    font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
-    z-index: 2;
-  }
-  #filter-panel h3{ margin: 0 0 10px; font-size: 16px; }
-  #filter-panel label{ display:block; margin-top:10px; font-size: 12px; opacity: .85; }
-  #filter-panel select, #filter-panel button{
-    width: 100%;
-    margin-top: 6px;
-    padding: 8px;
-    border-radius: 8px;
-    border: 1px solid rgba(0,0,0,.15);
-    background: white;
-  }
-  #filter-panel button{
-    margin-top: 12px;
-    cursor: pointer;
-  }
-  #filter-panel .hint{
-    margin-top: 10px;
-    font-size: 12px;
-    opacity: .7;
-    line-height: 1.25;
-  }
 </style>
-<div id="app">
-  <div id="map" style="height:100vh"></div>
+<h1 class=" fs-2 text-left mt-5 mb-4"> Mapa de identificación de áreas prioritarias</h1>
 
-  <!-- Panel de filtros -->
-  <div id="filter-panel">
-    <h3>Filtros</h3>
+<div class="row g-4 mt-2">
 
-    <label>Región</label>
-    <select id="sel-region">
-      <option value="">Todas</option>
-    </select>
+    <div class="col-12 col-lg-4 col-xl-2">
 
-    <label>Provincia</label>
-    <select id="sel-provincia" disabled>
-      <option value="">Todas</option>
-    </select>
+        <div class="sage-card p-2 rounded-1 shadow-sm border-0 mb-2 text-white">
+            <div class="d-flex align-items-center mb-2">
+                <i class="bi bi-map fs-4 me-1"></i>
+                <h2 class="h6 fw-bold mb-0">Visualización</h2>
+            </div>
+            <p class="small mb-0 opacity-90 fw-light lh-base">
+                indicadores de valor ecológico,amenazas y niveles de protección sobre el territorio.
+            </p>
+        </div>
 
-    <label>Comuna</label>
-    <select id="sel-comuna" disabled>
-      <option value="">Todas</option>
-    </select>
+        <div class="sticky-top" style="top: 90px; z-index: 1;">
 
-    <label class="chk">
-      <input type="checkbox" id="toggle-piso" />
-      <span>Pisos Vegetacionales</span>
-    </label>
+            <label>Región</label>
+            <select id="sel-region" class="form-select form-select-lg border shadow-sm rounded-1 py-3 text-secondary" style="font-size: 1rem;">
+              <option value="">Todas</option>
+            </select>
 
-    <button id="btn-clear" type="button">Limpiar</button>
-  </div>
-  <!-- Sidebar derecho -->
-  <aside id="sidebar" class="sidebar">
-    <div class="sidebar__header">
-      <h3>Selección</h3>
-      <button id="btnClear" class="btn">Limpiar</button>
+            <label>Provincia</label>
+            <select id="sel-provincia" disabled class="form-select form-select-lg border shadow-sm rounded-1 py-3 text-secondary" style="font-size: 1rem;">
+              <option value="">Todas</option>
+            </select>
+
+            <label>Comuna</label>
+            <select id="sel-comuna" disabled class="form-select form-select-lg border shadow-sm rounded-1 py-3 text-secondary" style="font-size: 1rem;">
+              <option value="">Todas</option>
+            </select>
+
+            <label class="chk">
+              <input type="checkbox" id="toggle-fave" />
+              <span>Índice Fave</span>
+            </label>
+
+            <label class="chk">
+              <input type="checkbox" id="toggle-piso" />
+              <span>Pisos Vegetacionales</span>
+            </label>
+
+            <button id="btn-clear" type="button">Limpiar</button>
+
+        </div>
     </div>
 
-    <div id="sidebarContent" class="sidebar__content">
-      <p class="muted">Haz click en un hexágono para ver detalles.</p>
+    <div class="col-12 col-lg-8 col-xl-10">
+
+        <div class="bg-gray-panel rounded-2 h-100" height="100%">
+
+            <div id="map" style="height:100%"></div>
+
+        </div>
     </div>
-  </aside>
+    <!-- Sidebar derecho -->
+    <aside id="sidebar" class="sidebar">
+      <div class="sidebar__header">
+        <h3>Selección</h3>
+        <button id="btnClear" class="btn">Limpiar</button>
+      </div>
+
+      <div id="sidebarContent" class="sidebar__content">
+        <p class="muted">Haz click en un hexágono para ver detalles.</p>
+      </div>
+    </aside>
 </div>
 <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
 
@@ -145,12 +131,15 @@
     const selProv   = document.getElementById("sel-provincia");
     const selCom    = document.getElementById("sel-comuna");
     const btnClear  = document.getElementById("btn-clear");
+    const chkFave = document.getElementById("toggle-fave");
     const chkPiso = document.getElementById("toggle-piso");
     // === CONFIG: AJUSTA ESTO SEGÚN TU style.json ===
     // 1) El "source" que contiene tus tiles (en style.json -> sources -> <id>)
     const SOURCE_ID = "tegola";     // <-- cambia si tu source se llama distinto
     // 2) El "source-layer" dentro del tile (nombre de capa MVT; en Tegola suele ser el name del provider_layer)
     const SOURCE_LAYER = "hex5km";  // <-- cambiar si tu capa se llama distinto
+    const RASTER_SOURCE_ID = "wms-raster-src";
+    const RASTER_LAYER_ID  = "wms-raster-lyr";
     // =================================================
 
     // Si tu style.json NO trae el source, puedes agregarlo aquí (descomenta y ajusta URL):
@@ -284,46 +273,58 @@
     // =========================
 
     const workspace = "fave";
-    const GEO_HOST = window.GEOSERVER_BASE_URL || "http://localhost:8080";
-    const wmsBase = `${GEO_HOST}/geoserver/${workspace}/wms`;
+    const wmsBase = `{{ GEOSERVER_BASE_URL }}/geoserver/${workspace}/wms`;
 
-    function addRasterLayer(map, layerName, rasterOpacity) {
-      rasterLayerId=layerName;
-      rasterSourceId=layerName;
-      if (map.getLayer(rasterLayerId)) return; // ya existe
+    let activeRasterName = null; // ej: "hex5km" o "pisos"
 
-      if (!map.getSource(rasterSourceId)) {
-        map.addSource(rasterSourceId, {
-          type: "raster",
-          tiles: [
-            `${wmsBase}?service=WMS&version=1.1.1&request=GetMap` +
-            `&layers=${workspace}:${layerName}` +
-            `&styles=` +
-            `&format=image/png&transparent=true` +
-            `&srs=EPSG:3857` +
-            `&bbox={bbox-epsg-3857}&width=256&height=256`
-          ],
-          tileSize: 256
-        });
-      }
+    function addOrReplaceRaster(layerName, rasterOpacity = 0.8) {
+      // 1) borra el anterior (si existe)
+      removeRaster();
 
-      // Add Raster Layer
-      map.addLayer({
-        id: rasterLayerId,
+      // 2) crea source nuevo
+      map.addSource(RASTER_SOURCE_ID, {
         type: "raster",
-        source: rasterSourceId,
-        paint: {
-          "raster-opacity": rasterOpacity
-        }
+        tiles: [
+          `${wmsBase}?service=WMS&version=1.1.1&request=GetMap` +
+          `&layers=${workspace}:${layerName}` +
+          `&styles=` +
+          `&format=image/png&transparent=true` +
+          `&srs=EPSG:3857` +
+          `&bbox={bbox-epsg-3857}&width=256&height=256`
+        ],
+        tileSize: 256
       });
+
+      // 3) crea layer nuevo
+      map.addLayer({
+        id: RASTER_LAYER_ID,
+        type: "raster",
+        source: RASTER_SOURCE_ID,
+        paint: { "raster-opacity": rasterOpacity }
+      });
+
+      activeRasterName = layerName;
     }
 
-    function removeRasterLayer(map) {
-      if (map.getLayer(rasterLayerId)) {
-        map.removeLayer(rasterLayerId);
-      }
-      if (map.getSource(rasterSourceId)) {
-        map.removeSource(rasterSourceId);
+    function removeRaster() {
+      if (map.getLayer(RASTER_LAYER_ID)) map.removeLayer(RASTER_LAYER_ID);
+      if (map.getSource(RASTER_SOURCE_ID)) map.removeSource(RASTER_SOURCE_ID);
+      activeRasterName = null;
+    }
+
+    // =========================
+    // “checkboxes” mutuamente excluyentes
+    // =========================
+    function setExclusiveCheckbox(checkedEl, otherEl, rasterLayerName) {
+      if (checkedEl.checked) {
+        // desmarca el otro
+        otherEl.checked = false;
+
+        // reemplaza raster
+        addOrReplaceRaster(rasterLayerName, 0.8);
+      } else {
+        // si apagan el que estaba activo, borra raster
+        if (activeRasterName === rasterLayerName) removeRaster();
       }
     }
 
@@ -419,12 +420,20 @@
         if (map.getLayer(layerId)) map.setFilter(layerId, null);
       });
 
+      chkFave.checked = false;
+      chkPiso.checked = false;
+      removeRaster();
+
     });
 
-    chkPiso.addEventListener("change", (e) => {
-      if (e.target.checked) addRasterLayer(map, 'pisos', 0.3);
-      else removeRasterLayer(map);
+    chkFave.addEventListener("change", () => {
+      setExclusiveCheckbox(chkFave, chkPiso, "ve_pded");
     });
+
+    chkPiso.addEventListener("change", () => {
+      setExclusiveCheckbox(chkPiso, chkFave, "pisos");
+    });
+
 
 
     // =========================
@@ -468,8 +477,6 @@
       const feats = map.queryRenderedFeatures(e.point, { layers: polyLayers });
       map.getCanvas().style.cursor = feats.length ? "pointer" : "";
     });
-
-    addRasterLayer(map, "ve_pded", 0.8);
   });
 </script>
 {% endblock %}

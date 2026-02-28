@@ -10,6 +10,12 @@ import os, hashlib
 def index(request):
     return render(request, "index.html")
 
+def documents(request):
+    return render(request, "documents.html")
+
+def about(request):
+    return render(request, "about.html")
+
 def map(request):
     return render(request, "map.html", {"GEOSERVER_BASE_URL": settings.GEOSERVER_BASE_URL})
 
