@@ -110,9 +110,9 @@ def hex_formaciones(request):
     # - formaciones: geom_3857, gid, nombre (o el campo que represente el nombre)
     sql = """
     WITH h AS (
-      SELECT id_hex, geom_3857
+      SELECT hex_id, geom_3857
       FROM public.hex5km
-      WHERE id_hex = %s
+      WHERE hex_id = %s
       LIMIT 1
     )
     SELECT

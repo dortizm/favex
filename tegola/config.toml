@@ -21,28 +21,14 @@ max_zoom = "${TEGOLA_MAX_ZOOM}"
 name = "hex5km"
 geometry_fieldname = "geom"
 id_fieldname = "gid"
-geometry_type = "multilinestring"
+geometry_type = "multipolygon"
 
 sql = """
 SELECT
   gid,
-  id_hex,
-  riqueza_sp,
-  cut_reg,
-  cut_prov,
-  cut_com,
-  ST_AsBinary(
-    ST_Boundary(
-      CASE
-        WHEN !ZOOM! <= 6  THEN ST_SimplifyPreserveTopology(geom_3857, 200)
-        WHEN !ZOOM! <= 8  THEN ST_SimplifyPreserveTopology(geom_3857, 80)
-        WHEN !ZOOM! <= 10 THEN ST_SimplifyPreserveTopology(geom_3857, 25)
-        WHEN !ZOOM! <= 20 THEN ST_SimplifyPreserveTopology(geom_3857, 5)
-        ELSE geom_3857
-      END
-    )
-  ) AS geom
+  hex_id,
+  sr,
+  ST_AsBinary(ST_Boundary(geom_3857)) AS geom
 FROM public.hex5km
 WHERE geom_3857 && !BBOX!;
-
 """

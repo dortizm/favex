@@ -64,12 +64,12 @@
 
             <label class="chk">
               <input type="checkbox" id="toggle-fave" />
-              <span>Índice Fave</span>
+              <span>Singularidad y Representatividad (SR)</span>
             </label>
 
             <label class="chk">
-              <input type="checkbox" id="toggle-piso" />
-              <span>Pisos Vegetacionales</span>
+              <input type="checkbox" id="toggle-formaciones" />
+              <span>Formaciones</span>
             </label>
 
             <button id="btn-clear" type="button">Limpiar</button>
@@ -132,7 +132,7 @@
     const selCom    = document.getElementById("sel-comuna");
     const btnClear  = document.getElementById("btn-clear");
     const chkFave = document.getElementById("toggle-fave");
-    const chkPiso = document.getElementById("toggle-piso");
+    const chkFormaciones = document.getElementById("toggle-formaciones");
     // === CONFIG: AJUSTA ESTO SEGÚN TU style.json ===
     // 1) El "source" que contiene tus tiles (en style.json -> sources -> <id>)
     const SOURCE_ID = "tegola";     // <-- cambia si tu source se llama distinto
@@ -175,6 +175,18 @@
       );
     }
 
+    if (!map.getLayer("hex5km-line")) {
+      map.addLayer({
+        id: "hex5km-hit",
+        type: "fill",
+        source: SOURCE_ID,
+        "source-layer": SOURCE_LAYER,
+        paint: {
+          "fill-opacity": 0.01 
+        }
+      });
+    }
+
     // 2) Arma dinámicamente la lista de layers clickeables (incluye el fill nuevo)
     let polyLayers = map.getStyle().layers
       .filter(l => (l.type === "fill" || l.type === "line"))
@@ -191,7 +203,7 @@
     // =========================
     // CARGA DE SELECTS + FILTRO
     // =========================
-    const FILTER_LAYERS = ["hex5km-line"];
+    const FILTER_LAYERS = ["hex5km-line", "hex5km-hit"];
 
     // =========================
     // Sidebar render
@@ -203,14 +215,8 @@
       }
 
       const fields = [
-        ["id_hex", props.id_hex],
-        ["cut_reg", props.cut_reg],
-        ["cut_prov", props.cut_prov],
-        ["cut_com", props.cut_com],
-        ["region", props.region],
-        ["provincia", props.provincia],
-        ["comuna", props.comuna],
-        ["riqueza_sp", props.riqueza_sp],
+        ["ID Conglomerado", props.hex_id],
+        ["Índice Singularidad y Representatividad (SR)", props.sr],
       ].filter(([k, v]) => v !== undefined && v !== null && v !== "");
 
       // Render base inmediato
@@ -229,9 +235,9 @@
       `;
 
       // Si no hay id_hex, no podemos consultar
-      const idHex = props.id_hex;
+      const idHex = props.hex_id;
       if (!idHex) {
-        document.getElementById("formacionesBlock").innerHTML = `<p class="muted">Sin id_hex para consultar formaciones.</p>`;
+        document.getElementById("formacionesBlock").innerHTML = `<p class="muted">Sin ID Conglomerado para consultar formaciones.</p>`;
         return;
       }
 
@@ -275,7 +281,7 @@
     const workspace = "fave";
     const wmsBase = `{{ GEOSERVER_BASE_URL }}/geoserver/${workspace}/wms`;
 
-    let activeRasterName = null; // ej: "hex5km" o "pisos"
+    let activeRasterName = null; // ej: "hex5km" o "Formaciones"
 
     function addOrReplaceRaster(layerName, rasterOpacity = 0.8) {
       // 1) borra el anterior (si existe)
@@ -421,17 +427,17 @@
       });
 
       chkFave.checked = false;
-      chkPiso.checked = false;
+      chkFormaciones.checked = false;
       removeRaster();
 
     });
 
     chkFave.addEventListener("change", () => {
-      setExclusiveCheckbox(chkFave, chkPiso, "ve_pded");
+      setExclusiveCheckbox(chkFave, chkFormaciones, "sr");
     });
 
-    chkPiso.addEventListener("change", () => {
-      setExclusiveCheckbox(chkPiso, chkFave, "pisos");
+    chkFormaciones.addEventListener("change", () => {
+      setExclusiveCheckbox(chkFormaciones, chkFave, "formaciones");
     });
 
 
@@ -441,19 +447,18 @@
     // =========================
 
     map.on("click", async (e) => {
-      const z = map.getZoom();
-      const pad = Math.round(Math.min(300, Math.max(50, z * 5))); // 6..20 px aprox
-
+      const tol = 8; // más grande para líneas (prueba 6..12)
       const bbox = [
-        [e.point.x - pad, e.point.y - pad],
-        [e.point.x + pad, e.point.y + pad],
+        [e.point.x - tol, e.point.y - tol],
+        [e.point.x + tol, e.point.y + tol],
       ];
+      const feats = map.queryRenderedFeatures(bbox, { layers: polyLayers });
+      if (!feats.length) return;
 
-      const features = map.queryRenderedFeatures(bbox, { layers: polyLayers });
-      if (!features.length) return;
+      const f = feats.find(x => x?.properties?.hex_id != null) || feats[0];
 
-      const f = features.find(x => x.properties && x.properties.id_hex) || features[0];
-      const idHex = f.properties?.id_hex ?? "(sin id_hex)";
+      const gid   = f.id ?? f.properties?.gid;        // depende si hiciste promoteId (ver abajo)
+      const idHex = f.properties?.hex_id ?? "(sin hex_id)";
 
       const sidebarContent = document.getElementById("sidebarContent");
 
@@ -467,10 +472,10 @@
 
       new maplibregl.Popup()
         .setLngLat(e.lngLat)
-        .setHTML(`<b>id_hex:</b> ${idHex}`)
+        .setHTML(`<b>ID Conglomerado:</b> ${idHex}`)
         .addTo(map);
 
-      console.log("clicked layer:", f.layer?.id, "id_hex:", idHex, "feature:", f);
+      console.log("TEGOLA layer:", f.sourceLayer, "gid:", gid, "hex_id:", idHex, f);
     });
 
     map.on("mousemove", (e) => {
