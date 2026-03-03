@@ -11,4 +11,5 @@ urlpatterns = [
     path("api/provinces/", views.provinces),
     path("api/communes/", views.communes),
     path("api/hex-formaciones/", views.hex_formaciones, name="hex_formaciones"),
+    path("api/export-sr-pdf/", views.export_sr_pdf, name="export_sr_pdf"),
 ]

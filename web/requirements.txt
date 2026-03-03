@@ -4,3 +4,4 @@ djangorestframework
 geopandas
 sqlalchemy
 geoalchemy2
+reportlab

@@ -26,8 +26,8 @@
   .sidebar__content{ font-size: 13px; line-height: 1.35; }
 
   .kv{ padding: 8px; border: 1px solid #eee; border-radius: 10px; background: #fcfcfc; }
-  .k{ font-size: 11px; color:#666; }
-  .v{ font-size: 13px; font-weight: 600; word-break: break-word; }
+  .k{ font-size: 14px; color:#666; }
+  .v{ font-size: 12px; font-weight: 600; word-break: break-word; }
 </style>
 <h1 class=" fs-2 text-left mt-5 mb-4"> Mapa de identificación de áreas prioritarias</h1>
 
@@ -100,6 +100,36 @@
 <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
 
 <script>
+
+  function addExportButton(props, items) {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.textContent = "Exportar PDF";
+    btn.style.marginTop = "10px";
+
+    btn.addEventListener("click", async () => {
+      const r = await fetch("/api/export-sr-pdf/", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ props, items }),
+      });
+
+      if (!r.ok) {
+        alert("No se pudo generar el PDF.");
+        return;
+      }
+
+      const blob = await r.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `hex_${props?.hex_id ?? "sin_id"}.pdf`;
+      a.click();
+      URL.revokeObjectURL(url);
+    });
+
+    return btn;
+  }
 
   function setOptionsFromPairs(selectEl, pairs, includeAll=true){
     selectEl.innerHTML = "";
@@ -214,20 +244,36 @@
         return;
       }
 
+      const round3 = (v) =>
+        typeof v === "number" && Number.isFinite(v)
+          ? Math.round(v * 1000) / 1000
+          : v;
+
       const fields = [
         ["ID Conglomerado", props.hex_id],
-        ["Índice Singularidad y Representatividad (SR)", props.sr],
+        ["Categoría SR", props.sr_cat],
+        ["Valor SR", round3(props.sr)],
+        ["Valor Rareza de Formación (RF)", round3(props.rf)],
+        ["Valor Representatividad Ecosistémica (REP)", round3(props.rep)],
       ].filter(([k, v]) => v !== undefined && v !== null && v !== "");
 
       // Render base inmediato
       sidebarContent.innerHTML = `
-        <div class="row">
-          ${fields.map(([k, v]) => `
-            <div class="kv">
-              <div class="k">${escapeHtml(k)}</div>
-              <div class="v">${escapeHtml(v)}</div>
+        <div style="margin-top:10px;">
+          <div class="k" style="margin: 1px 0;"><b>Índice Singularidad y Representatividad (SR)</b></div>
+            <div style="border:1px solid #eee; border-radius:10px; overflow:hidden;">
+              <div class="row">
+                ${fields.map(([k, v]) => `
+                  <div class="kv">
+                    <div style="padding:1px 10px; border-top:1px solid #eee"}; background:#fff;">
+                      <div class="v" style="font-size:13px;">${escapeHtml(k)}</div>
+                      <div class="k">${escapeHtml(v)}</div>
+                    </div>
+                  </div>
+                `).join("")}
+              </div>
             </div>
-          `).join("")}
+          </div>
         </div>
         <div id="formacionesBlock">
           <p class="muted">Cargando formaciones…</p>
@@ -246,6 +292,8 @@
         const res = await fetchJSON(`/api/hex-formaciones/?id_hex=${encodeURIComponent(idHex)}`);
         const items = (res && res.ok && Array.isArray(res.items)) ? res.items : [];
         document.getElementById("formacionesBlock").innerHTML = renderFormaciones(items);
+        const b = addExportButton(props, items);
+        sidebarContent.appendChild(b);
       } catch (err) {
         console.error(err);
         document.getElementById("formacionesBlock").innerHTML = `<p class="muted">Error consultando formaciones.</p>`;
@@ -260,7 +308,7 @@
         const top = items.slice(0, 10); // muestra máx 10 (ajusta)
         return `
           <div style="margin-top:10px;">
-            <div class="k" style="margin: 6px 0;">Formaciones (intersección)</div>
+            <div class="k" style="margin: 1px 0;"><b>Formaciones Vegetacionales</b></div>
             <div style="border:1px solid #eee; border-radius:10px; overflow:hidden;">
               ${top.map((x, i) => `
                 <div style="padding:8px 10px; border-top:${i ? "1px solid #eee" : "0"}; background:#fff;">
@@ -273,6 +321,8 @@
           </div>
         `;
     }
+
+    
 
     // =========================
     // Raster render

@@ -28,6 +28,9 @@ SELECT
   gid,
   hex_id,
   sr,
+  sr_cat,
+  rf,
+  rep,
   ST_AsBinary(ST_Boundary(geom_3857)) AS geom
 FROM public.hex5km
 WHERE geom_3857 && !BBOX!;
